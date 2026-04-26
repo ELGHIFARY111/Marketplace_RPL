@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const { getAllPromosi, createPromosi, updatePromosi, deletePromosi } = require('../controllers/promosi.controller');
+const promiController = require('../controllers/promosi.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.get('/',       getAllPromosi);
-router.post('/',      verifyToken, isAdmin, createPromosi);
-router.put('/:id',    verifyToken, isAdmin, updatePromosi);
-router.delete('/:id', verifyToken, isAdmin, deletePromosi);
+// Public routes
+router.get('/', promiController.getAllPromos);
+router.get('/:id', promiController.getPromoById);
+
+// Protected routes
+router.post('/', authenticateToken, promiController.createPromo);
+router.put('/:id', authenticateToken, promiController.updatePromo);
 
 module.exports = router;

@@ -1,37 +1,47 @@
-const db = require('../config/db');
+// Template untuk Promosi Controller
 
-const getAllPromosi = async (req, res) => {
+const getAllPromos = async (req, res) => {
   try {
-    const [rows] = await db.query(`
-      SELECT pr.*, p.nama_produk FROM promosi pr
-      JOIN produk p ON pr.id_produk=p.id_produk`);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    // TODO: Query promos dari database
+    res.json({ message: 'Get all promos' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const createPromosi = async (req, res) => {
+const getPromoById = async (req, res) => {
   try {
-    const { id_produk, persentase_diskon, batas_waktu } = req.body;
-    await db.query('INSERT INTO promosi (id_produk, persentase_diskon, batas_waktu) VALUES (?,?,?)',
-      [id_produk, persentase_diskon, batas_waktu]);
-    res.status(201).json({ message: 'Promosi dibuat' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { id } = req.params;
+    // TODO: Query promo dari database
+    res.json({ message: `Get promo ${id}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const updatePromosi = async (req, res) => {
+const createPromo = async (req, res) => {
   try {
-    const { persentase_diskon, batas_waktu } = req.body;
-    await db.query('UPDATE promosi SET persentase_diskon=?, batas_waktu=? WHERE id_promosi=?',
-      [persentase_diskon, batas_waktu, req.params.id]);
-    res.json({ message: 'Promosi diperbarui' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { title, description, discount, start_date, end_date } = req.body;
+    // TODO: Create promo di database
+    res.status(201).json({ message: 'Promo created' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const deletePromosi = async (req, res) => {
+const updatePromo = async (req, res) => {
   try {
-    await db.query('DELETE FROM promosi WHERE id_promosi=?', [req.params.id]);
-    res.json({ message: 'Promosi dihapus' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { id } = req.params;
+    // TODO: Update promo di database
+    res.json({ message: `Promo ${id} updated` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-module.exports = { getAllPromosi, createPromosi, updatePromosi, deletePromosi };
+module.exports = {
+  getAllPromos,
+  getPromoById,
+  createPromo,
+  updatePromo
+};

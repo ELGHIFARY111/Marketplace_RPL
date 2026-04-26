@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const { sendPesan, getMyPesan, getAllPesan, replyPesan } = require('../controllers/cs.controller');
+const csController = require('../controllers/cs.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.post('/',         verifyToken, sendPesan);
-router.get('/my',        verifyToken, getMyPesan);
-router.get('/',          verifyToken, isAdmin, getAllPesan);
-router.put('/:id/reply', verifyToken, isAdmin, replyPesan);
+// Protected routes
+router.get('/', authenticateToken, csController.getUserMessages);
+router.post('/', authenticateToken, csController.createMessage);
+router.post('/:id/reply', authenticateToken, csController.replyMessage);
 
 module.exports = router;

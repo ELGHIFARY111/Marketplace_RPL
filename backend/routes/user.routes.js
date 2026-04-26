@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const {
-  getAllUsers, getUserById, updateUser, deleteUser
-} = require('../controllers/user.controller');
+const userController = require('../controllers/user.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.get('/',       verifyToken, isAdmin, getAllUsers);
-router.get('/:id',    verifyToken, getUserById);
-router.put('/:id',    verifyToken, updateUser);
-router.delete('/:id', verifyToken, isAdmin, deleteUser);
+// Protected routes (require authentication)
+router.get('/profile', authenticateToken, userController.getUserProfile);
+router.put('/profile', authenticateToken, userController.updateUserProfile);
+router.delete('/:id', authenticateToken, userController.deleteUser);
 
 module.exports = router;

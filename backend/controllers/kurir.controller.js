@@ -1,34 +1,36 @@
-const db = require('../config/db');
+// Template untuk Kurir (Shipping) Controller
 
-const getAllKurir = async (req, res) => {
+const getAllShippers = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM kurir');
-    res.json(rows);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    // TODO: Query shippers dari database
+    res.json({ message: 'Get all shippers' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const createKurir = async (req, res) => {
+const getShippingCost = async (req, res) => {
   try {
-    const { nama_kurir, ongkos_kirim } = req.body;
-    await db.query('INSERT INTO kurir (nama_kurir, ongkos_kirim) VALUES (?,?)', [nama_kurir, ongkos_kirim]);
-    res.status(201).json({ message: 'Kurir ditambahkan' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { origin, destination, weight } = req.body;
+    // TODO: Calculate shipping cost
+    res.json({ message: 'Shipping cost calculated' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const updateKurir = async (req, res) => {
+const trackShipment = async (req, res) => {
   try {
-    const { nama_kurir, ongkos_kirim } = req.body;
-    await db.query('UPDATE kurir SET nama_kurir=?, ongkos_kirim=? WHERE id_kurir=?',
-      [nama_kurir, ongkos_kirim, req.params.id]);
-    res.json({ message: 'Kurir diperbarui' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { trackingNumber } = req.params;
+    // TODO: Get tracking info
+    res.json({ message: `Tracking info for ${trackingNumber}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const deleteKurir = async (req, res) => {
-  try {
-    await db.query('DELETE FROM kurir WHERE id_kurir=?', [req.params.id]);
-    res.json({ message: 'Kurir dihapus' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+module.exports = {
+  getAllShippers,
+  getShippingCost,
+  trackShipment
 };
-
-module.exports = { getAllKurir, createKurir, updateKurir, deleteKurir };

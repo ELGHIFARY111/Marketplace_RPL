@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const { getAllKategori, createKategori, updateKategori, deleteKategori } = require('../controllers/kategori.controller');
+const kategoriController = require('../controllers/kategori.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.get('/',       getAllKategori);
-router.post('/',      verifyToken, isAdmin, createKategori);
-router.put('/:id',    verifyToken, isAdmin, updateKategori);
-router.delete('/:id', verifyToken, isAdmin, deleteKategori);
+// Public routes
+router.get('/', kategoriController.getAllCategories);
+router.get('/:id', kategoriController.getCategoryById);
+
+// Protected routes
+router.post('/', authenticateToken, kategoriController.createCategory);
+router.put('/:id', authenticateToken, kategoriController.updateCategory);
+router.delete('/:id', authenticateToken, kategoriController.deleteCategory);
 
 module.exports = router;

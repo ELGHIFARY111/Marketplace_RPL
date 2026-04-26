@@ -1,40 +1,39 @@
-const db = require('../config/db');
-const bcrypt = require('bcryptjs');
+// Template untuk User Controller
+// Operasi: Get user profile, Update profile, Delete account
 
-const getAllUsers = async (req, res) => {
+const getUserProfile = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT id_user, nama_lengkap, email, no_telp, tgl_daftar, level_akses FROM users');
-    res.json(rows);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const userId = req.user.id;
+    // TODO: Query user dari database
+    res.json({ message: `Get user ${userId} profile` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const getUserById = async (req, res) => {
+const updateUserProfile = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT id_user, nama_lengkap, email, no_telp, tgl_daftar, level_akses FROM users WHERE id_user = ?', [req.params.id]);
-    if (!rows.length) return res.status(404).json({ message: 'User tidak ditemukan' });
-    res.json(rows[0]);
-  } catch (err) { res.status(500).json({ message: err.message }); }
-};
-
-const updateUser = async (req, res) => {
-  try {
-    const { nama_lengkap, no_telp, password, level_akses } = req.body;
-    let hashed = null;
-    if (password) hashed = await bcrypt.hash(password, 10);
-
-    await db.query(
-      `UPDATE users SET nama_lengkap=?, no_telp=?${hashed ? ', password=?' : ''}${level_akses ? ', level_akses=?' : ''} WHERE id_user=?`,
-      [nama_lengkap, no_telp, ...(hashed ? [hashed] : []), ...(level_akses ? [level_akses] : []), req.params.id]
-    );
-    res.json({ message: 'User diperbarui' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const userId = req.user.id;
+    const { name, phone, address } = req.body;
+    // TODO: Update user di database
+    res.json({ message: `User ${userId} profile updated` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 const deleteUser = async (req, res) => {
   try {
-    await db.query('DELETE FROM users WHERE id_user = ?', [req.params.id]);
-    res.json({ message: 'User dihapus' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const userId = req.user.id;
+    // TODO: Delete user dari database
+    res.json({ message: `User ${userId} deleted` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-module.exports = { getAllUsers, getUserById, updateUser, deleteUser };
+module.exports = {
+  getUserProfile,
+  updateUserProfile,
+  deleteUser
+};

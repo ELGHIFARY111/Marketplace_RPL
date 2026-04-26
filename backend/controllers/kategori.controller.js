@@ -1,34 +1,59 @@
-const db = require('../config/db');
+// Template untuk Category Controller
 
-const getAllKategori = async (req, res) => {
+const getAllCategories = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM kategori');
-    res.json(rows);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    // TODO: Query categories dari database
+    res.json({ message: 'Get all categories' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const createKategori = async (req, res) => {
+const getCategoryById = async (req, res) => {
   try {
-    const { nama_kategori, icon_kategori } = req.body;
-    await db.query('INSERT INTO kategori (nama_kategori, icon_kategori) VALUES (?,?)', [nama_kategori, icon_kategori]);
-    res.status(201).json({ message: 'Kategori dibuat' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { id } = req.params;
+    // TODO: Query category dari database
+    res.json({ message: `Get category ${id}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const updateKategori = async (req, res) => {
+const createCategory = async (req, res) => {
   try {
-    const { nama_kategori, icon_kategori } = req.body;
-    await db.query('UPDATE kategori SET nama_kategori=?, icon_kategori=? WHERE id_kategori=?',
-      [nama_kategori, icon_kategori, req.params.id]);
-    res.json({ message: 'Kategori diperbarui' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { name, description } = req.body;
+    // TODO: Insert category ke database
+    res.status(201).json({ message: 'Category created' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const deleteKategori = async (req, res) => {
+const updateCategory = async (req, res) => {
   try {
-    await db.query('DELETE FROM kategori WHERE id_kategori = ?', [req.params.id]);
-    res.json({ message: 'Kategori dihapus' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { id } = req.params;
+    const { name, description } = req.body;
+    // TODO: Update category di database
+    res.json({ message: `Category ${id} updated` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-module.exports = { getAllKategori, createKategori, updateKategori, deleteKategori };
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // TODO: Delete category dari database
+    res.json({ message: `Category ${id} deleted` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  getAllCategories,
+  getCategoryById,
+  createCategory,
+  updateCategory,
+  deleteCategory
+};

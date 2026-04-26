@@ -1,22 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const upload = require('../middleware/upload.middleware');
-const {
-  createPesanan, getMyPesanan, getPesananById,
-  getAllPesanan, updateStatusPesanan, deletePesanan,
-  konfirmasiBayar
-} = require('../controllers/pesanan.controller');
+const pesananController = require('../controllers/pesanan.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-// Customer
-router.post('/',                          verifyToken, createPesanan);
-router.get('/my',                         verifyToken, getMyPesanan);
-router.get('/:id',                        verifyToken, getPesananById);
-router.post('/:id/bayar', verifyToken, upload.single('bukti_transfer'), konfirmasiBayar);
-
-// Admin
-router.get('/',           verifyToken, isAdmin, getAllPesanan);
-router.put('/:id/status', verifyToken, isAdmin, updateStatusPesanan);
-router.delete('/:id',     verifyToken, isAdmin, deletePesanan);
+// Protected routes
+router.get('/', authenticateToken, pesananController.getUserOrders);
+router.post('/', authenticateToken, pesananController.createOrder);
+router.get('/:id', authenticateToken, pesananController.getOrderById);
+router.put('/:id', authenticateToken, pesananController.updateOrderStatus);
 
 module.exports = router;

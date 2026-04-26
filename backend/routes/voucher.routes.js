@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const { getAllVoucher, validateVoucher, createVoucher, updateVoucher, deleteVoucher } = require('../controllers/voucher.controller');
+const voucherController = require('../controllers/voucher.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.get('/',          verifyToken, isAdmin, getAllVoucher);
-router.post('/validate', verifyToken, validateVoucher);
-router.post('/',         verifyToken, isAdmin, createVoucher);
-router.put('/:id',       verifyToken, isAdmin, updateVoucher);
-router.delete('/:id',    verifyToken, isAdmin, deleteVoucher);
+// Public routes
+router.get('/', voucherController.getAllVouchers);
+router.post('/validate', voucherController.validateVoucher);
+
+// Protected routes
+router.post('/', authenticateToken, voucherController.createVoucher);
+router.get('/:id', authenticateToken, voucherController.getVoucherById);
 
 module.exports = router;

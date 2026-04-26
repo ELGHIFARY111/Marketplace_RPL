@@ -1,32 +1,40 @@
-const TentangKamiPage = () => {
+// About Page Template
+export default function TentangKamiPage() {
   return (
-    <div className="container" style={{ padding: '2rem 1rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '2rem', textAlign: 'center' }}>Tentang Zenvy Apparel</h1>
-      
-      <div style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '8px', border: '1px solid var(--border)', lineHeight: '1.8', color: '#ccc' }}>
-        <p style={{ marginBottom: '1.5rem' }}>
-          <strong>Zenvy Apparel</strong> adalah destinasi utama untuk fashion modern dan trendi. Berdiri sejak tahun 2024, kami berkomitmen untuk menyediakan pakaian berkualitas tinggi yang tidak hanya nyaman dipakai tetapi juga mampu mengekspresikan gaya unik Anda.
+    <div className="tentang-kami-page">
+      <section className="hero">
+        <h1>About Marketplace</h1>
+        <p>Discover our story and mission</p>
+      </section>
+
+      <section className="about-content">
+        <h2>Who We Are</h2>
+        <p>
+          Marketplace Apparel adalah platform e-commerce terkemuka yang menyediakan koleksi pakaian terlengkap
+          dengan kualitas terbaik dan harga kompetitif.
         </p>
-        
-        <p style={{ marginBottom: '1.5rem' }}>
-          Kami percaya bahwa fashion adalah bentuk ekspresi diri yang paling kuat. Oleh karena itu, koleksi kami dikurasi dengan cermat dari berbagai kategori, mulai dari atasan, bawahan, gaun, hingga aksesori, untuk memastikan Anda selalu tampil percaya diri di setiap kesempatan.
+
+        <h2>Our Mission</h2>
+        <p>
+          Misi kami adalah menyediakan pengalaman berbelanja online yang mudah, aman, dan menyenangkan bagi
+          semua pelanggan.
         </p>
-        
-        <h3 style={{ color: '#fff', marginTop: '2.5rem', marginBottom: '1rem' }}>Misi Kami</h3>
-        <ul style={{ paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
-          <li>Menyediakan tren fashion terbaru dengan harga yang terjangkau.</li>
-          <li>Mengutamakan kualitas material dan kenyamanan pakaian.</li>
-          <li>Memberikan pengalaman belanja online yang mudah, aman, dan menyenangkan.</li>
-          <li>Mendukung gaya hidup berkelanjutan melalui pilihan produk yang ramah lingkungan.</li>
+
+        <h2>Why Choose Us</h2>
+        <ul>
+          <li>Wide selection of apparel</li>
+          <li>Competitive prices</li>
+          <li>Fast and reliable shipping</li>
+          <li>Excellent customer service</li>
+          <li>Secure payment methods</li>
         </ul>
-        
-        <h3 style={{ color: '#fff', marginTop: '2.5rem', marginBottom: '1rem' }}>Mengapa Memilih Kami?</h3>
-        <p style={{ marginBottom: '1.5rem' }}>
-          Dengan layanan pelanggan yang responsif, pengiriman cepat, dan sistem pembayaran yang aman, Zenvy Apparel berusaha menjadi mitra fashion terbaik Anda. Terima kasih telah mempercayakan gaya Anda pada kami!
-        </p>
-      </div>
+      </section>
+
+      <section className="contact-section">
+        <h2>Get in Touch</h2>
+        <p>Have questions? We'd love to hear from you!</p>
+        <a href="/hubungi-cs">Contact Us</a>
+      </section>
     </div>
   );
-};
-
-export default TentangKamiPage;
+}

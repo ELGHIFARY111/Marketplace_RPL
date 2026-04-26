@@ -1,10 +1,9 @@
-const LoadingSpinner = ({ text = 'Memuat...' }) => (
-  <div className="loading-spinner">
-    <div style={{ textAlign: 'center' }}>
-      <div className="spinner" />
-      {text && <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.75rem' }}>{text}</p>}
+// Loading Spinner Component
+export default function LoadingSpinner() {
+  return (
+    <div className="spinner-container">
+      <div className="spinner"></div>
+      <p>Loading...</p>
     </div>
-  </div>
-);
-
-export default LoadingSpinner;
+  );
+}

@@ -1,54 +1,61 @@
-const db = require('../config/db');
+// Template untuk Cart Controller
 
-const getKeranjang = async (req, res) => {
+const addToCart = async (req, res) => {
   try {
-    const [rows] = await db.query(`
-      SELECT k.id_keranjang, k.qty, v.id_varian, v.warna, v.ukuran, v.harga, v.stok,
-        p.id_produk, p.nama_produk,
-        (SELECT file_foto FROM foto_produk WHERE id_produk = p.id_produk LIMIT 1) AS foto
-      FROM keranjang k
-      JOIN varian_produk v ON k.id_varian = v.id_varian
-      JOIN produk p ON v.id_produk = p.id_produk
-      WHERE k.id_user = ?`, [req.user.id_user]);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const userId = req.user.id;
+    const { product_id, quantity } = req.body;
+    // TODO: Add item ke cart di database
+    res.status(201).json({ message: 'Item added to cart' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const addToKeranjang = async (req, res) => {
+const getCart = async (req, res) => {
   try {
-    const { id_varian, qty } = req.body;
-    const [existing] = await db.query(
-      'SELECT id_keranjang, qty FROM keranjang WHERE id_user=? AND id_varian=?',
-      [req.user.id_user, id_varian]
-    );
-    if (existing.length > 0) {
-      await db.query('UPDATE keranjang SET qty=? WHERE id_keranjang=?',
-        [existing[0].qty + qty, existing[0].id_keranjang]);
-    } else {
-      await db.query('INSERT INTO keranjang (id_user, id_varian, qty) VALUES (?,?,?)',
-        [req.user.id_user, id_varian, qty]);
-    }
-    res.status(201).json({ message: 'Ditambahkan ke keranjang' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const userId = req.user.id;
+    // TODO: Get cart items dari database
+    res.json({ message: `Get cart for user ${userId}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const updateKeranjang = async (req, res) => {
+const updateCartItem = async (req, res) => {
   try {
-    const { qty } = req.body;
-    if (qty <= 0) {
-      await db.query('DELETE FROM keranjang WHERE id_keranjang=? AND id_user=?', [req.params.id, req.user.id_user]);
-    } else {
-      await db.query('UPDATE keranjang SET qty=? WHERE id_keranjang=? AND id_user=?', [qty, req.params.id, req.user.id_user]);
-    }
-    res.json({ message: 'Keranjang diperbarui' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { cartId } = req.params;
+    const { quantity } = req.body;
+    // TODO: Update cart item di database
+    res.json({ message: `Cart item ${cartId} updated` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const removeFromKeranjang = async (req, res) => {
+const removeFromCart = async (req, res) => {
   try {
-    await db.query('DELETE FROM keranjang WHERE id_keranjang=? AND id_user=?', [req.params.id, req.user.id_user]);
-    res.json({ message: 'Item dihapus dari keranjang' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { cartId } = req.params;
+    // TODO: Delete cart item dari database
+    res.json({ message: `Item ${cartId} removed from cart` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-module.exports = { getKeranjang, addToKeranjang, updateKeranjang, removeFromKeranjang };
+const clearCart = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // TODO: Clear all cart items untuk user
+    res.json({ message: `Cart cleared for user ${userId}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  addToCart,
+  getCart,
+  updateCartItem,
+  removeFromCart,
+  clearCart
+};

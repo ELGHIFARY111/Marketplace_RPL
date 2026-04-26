@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('../middleware/auth.middleware');
-const { addUlasan, getUlasanByProduk } = require('../controllers/ulasan.controller');
+const ulasanController = require('../controllers/ulasan.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.get('/produk/:id_produk', getUlasanByProduk);
-router.post('/',                 verifyToken, addUlasan);
+// Public routes
+router.get('/', ulasanController.getAllReviews);
+router.get('/product/:productId', ulasanController.getProductReviews);
+
+// Protected routes
+router.post('/', authenticateToken, ulasanController.createReview);
+router.put('/:id', authenticateToken, ulasanController.updateReview);
+router.delete('/:id', authenticateToken, ulasanController.deleteReview);
 
 module.exports = router;

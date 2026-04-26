@@ -1,35 +1,49 @@
-const db = require('../config/db');
+// Template untuk CS (Customer Service) Controller
 
-const sendPesan = async (req, res) => {
+const getAllMessages = async (req, res) => {
   try {
-    const { subjek, isi_pesan } = req.body;
-    await db.query('INSERT INTO pesan_cs (id_user, subjek, isi_pesan, tgl_kirim, status_balasan) VALUES (?,?,?,NOW(),?)',
-      [req.user.id_user, subjek, isi_pesan, 'Belum Dibalas']);
-    res.status(201).json({ message: 'Pesan terkirim' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    // TODO: Query CS messages dari database
+    res.json({ message: 'Get all messages' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const getMyPesan = async (req, res) => {
+const getUserMessages = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM pesan_cs WHERE id_user=? ORDER BY tgl_kirim DESC', [req.user.id_user]);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const userId = req.user.id;
+    // TODO: Query CS messages untuk user
+    res.json({ message: `Get messages for user ${userId}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const getAllPesan = async (req, res) => {
+const createMessage = async (req, res) => {
   try {
-    const [rows] = await db.query(`
-      SELECT pc.*, u.nama_lengkap FROM pesan_cs pc
-      JOIN users u ON pc.id_user=u.id_user ORDER BY pc.tgl_kirim DESC`);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const userId = req.user.id;
+    const { message, subject } = req.body;
+    // TODO: Create CS message di database
+    res.status(201).json({ message: 'Message sent to CS' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const replyPesan = async (req, res) => {
+const replyMessage = async (req, res) => {
   try {
-    await db.query('UPDATE pesan_cs SET status_balasan=? WHERE id_pesan=?', ['Sudah Dibalas', req.params.id]);
-    res.json({ message: 'Pesan ditandai sudah dibalas' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const { id } = req.params;
+    const { reply } = req.body;
+    // TODO: Add reply ke CS message
+    res.json({ message: `Reply sent for message ${id}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-module.exports = { sendPesan, getMyPesan, getAllPesan, replyPesan };
+module.exports = {
+  getAllMessages,
+  getUserMessages,
+  createMessage,
+  replyMessage
+};

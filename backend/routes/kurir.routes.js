@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const { getAllKurir, createKurir, updateKurir, deleteKurir } = require('../controllers/kurir.controller');
+const kurirController = require('../controllers/kurir.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.get('/',       getAllKurir);
-router.post('/',      verifyToken, isAdmin, createKurir);
-router.put('/:id',    verifyToken, isAdmin, updateKurir);
-router.delete('/:id', verifyToken, isAdmin, deleteKurir);
+// Public routes
+router.get('/', kurirController.getAllShippers);
+router.post('/cost', kurirController.getShippingCost);
+router.get('/track/:trackingNumber', kurirController.trackShipment);
 
 module.exports = router;

@@ -1,22 +1,17 @@
-# Dependencies
 node_modules/
-
-# Build output
-frontend/dist/
-backend/dist/
-
-# Environment files (contains secrets)
+dist/
+build/
 .env
-backend/.env
-
-# Uploads (user-uploaded files)
-backend/uploads/*
-!backend/uploads/.gitkeep
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Editor
-.vscode/
+.env.local
+.env.*.local
 *.log
+*.pid
+*.seed
+*.pid.lock
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cache/
