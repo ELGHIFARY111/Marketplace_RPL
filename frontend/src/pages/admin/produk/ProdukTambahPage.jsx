@@ -1,4 +1,2 @@
-﻿const ProdukTambahPage = () => {
-  return <div>ProdukTambahPage</div>;
-};
-export default ProdukTambahPage;
+// ProdukTambahPage – alias to ProdukFormPage (Add mode)
+export { default } from './ProdukFormPage';

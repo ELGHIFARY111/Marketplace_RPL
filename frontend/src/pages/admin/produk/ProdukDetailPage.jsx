@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
@@ -8,13 +8,10 @@ const formatRupiah = (n) =>
 
 const ProdukDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Varian form state
-  const [showVarianForm, setShowVarianForm] = useState(false);
-  const [varianForm, setVarianForm] = useState({ warna: '', ukuran: '', harga: '', stok: '' });
-  const [savingVarian, setSavingVarian] = useState(false);
+  const [extraPhotos, setExtraPhotos] = useState(0);
 
   useEffect(() => {
     fetchDetail();
@@ -24,26 +21,11 @@ const ProdukDetailPage = () => {
     try {
       const { data } = await api.get(`/produk/${id}`);
       setProduct(data);
+      if (data.foto?.length > 3) setExtraPhotos(data.foto.length - 3);
     } catch (err) {
       console.error('Failed to fetch detail:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAddVarian = async (e) => {
-    e.preventDefault();
-    setSavingVarian(true);
-    try {
-      await api.post(`/produk/${id}/varian`, varianForm);
-      alert('Varian berhasil ditambahkan');
-      setShowVarianForm(false);
-      setVarianForm({ warna: '', ukuran: '', harga: '', stok: '' });
-      fetchDetail();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menambah varian');
-    } finally {
-      setSavingVarian(false);
     }
   };
 
@@ -61,116 +43,187 @@ const ProdukDetailPage = () => {
   if (!product) return <div>Produk tidak ditemukan</div>;
 
   const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  const displayPhotos = product.foto?.slice(0, 3) || [];
+  const hasExtra = (product.foto?.length || 0) > 3;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link to="/admin/produk" className="btn btn-outline" style={{ padding: '0.5rem 1rem' }}>&larr; Kembali</Link>
-          <h1 style={{ margin: 0 }}>Detail Produk</h1>
-        </div>
-        <Link to={`/admin/produk/edit/${id}`} className="btn btn-primary">Edit Produk</Link>
+      {/* Page Header */}
+      <div style={{ marginBottom: '0.5rem' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.2rem', fontWeight: 700, margin: 0 }}>
+          Produk dan Stok{' '}
+          <span style={{ fontWeight: 400, fontSize: '1rem', color: '#888' }}>
+            Produk &gt; detail
+          </span>
+        </h1>
+      </div>
+      <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '1rem 0 1.5rem' }} />
+
+      {/* Product Info + Edit Button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+        <Link
+          to={`/admin/produk/edit/${id}`}
+          className="btn"
+          style={{ background: '#FF9800', color: '#fff', border: 'none', padding: '0.5rem 2rem' }}
+        >
+          Edit
+        </Link>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-        <div style={{ background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-          <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Informasi Dasar</h3>
-          <p><strong>Nama:</strong> {product.nama_produk}</p>
-          <p><strong>Kategori:</strong> {product.nama_kategori}</p>
-          <p><strong>Harga Dasar:</strong> {formatRupiah(product.harga)}</p>
-          <p><strong>Stok Global:</strong> {product.stok}</p>
-          <p><strong>Berat:</strong> {product.berat} gram</p>
-          <p style={{ marginTop: '1rem' }}><strong>Deskripsi:</strong></p>
-          <p style={{ color: '#ccc', whiteSpace: 'pre-wrap' }}>{product.deskripsi}</p>
+      {/* Info Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+        {/* Left: Product Fields */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {[
+            { label: 'Nama Produk', value: product.nama_produk },
+            { label: 'Kategori Produk', value: product.nama_kategori },
+            { label: 'Deskrisi Produk', value: product.deskripsi },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem' }}>
+              <span style={{ width: '160px', fontWeight: 600, fontSize: '0.95rem', flexShrink: 0 }}>{label}</span>
+              <div style={{
+                flex: 1,
+                background: '#f0f0f0',
+                borderRadius: '8px',
+                padding: '0.6rem 1rem',
+                minHeight: label === 'Deskrisi Produk' ? '80px' : 'auto',
+                fontSize: '0.95rem',
+                color: '#333',
+                whiteSpace: 'pre-wrap',
+              }}>
+                {value}
+              </div>
+            </div>
+          ))}
         </div>
 
-        <div style={{ background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-          <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Foto Produk</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-            {product.foto?.map((f, i) => (
-              <img 
-                key={i}
-                src={f.file_foto && f.file_foto !== 'placeholder.jpg' ? `${API_URL}/${f.file_foto}` : 'https://placehold.co/100x100/1a1a1a/fff'} 
-                style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }}
+        {/* Right: Photos */}
+        <div>
+          <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Foto Produk</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+            {/* Main photo - larger */}
+            {displayPhotos[0] && (
+              <div style={{ gridColumn: '1', gridRow: '1 / 3' }}>
+                <img
+                  src={displayPhotos[0].file_foto && displayPhotos[0].file_foto !== 'placeholder.jpg'
+                    ? `${API_URL}/${displayPhotos[0].file_foto}`
+                    : 'https://placehold.co/200x200/e8e8e8/666'}
+                  style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                  alt=""
+                />
+              </div>
+            )}
+            {/* Secondary photos */}
+            {displayPhotos[1] && (
+              <img
+                src={displayPhotos[1].file_foto && displayPhotos[1].file_foto !== 'placeholder.jpg'
+                  ? `${API_URL}/${displayPhotos[1].file_foto}`
+                  : 'https://placehold.co/100x100/e8e8e8/666'}
+                style={{ width: '100%', height: '85px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
                 alt=""
               />
-            ))}
-            {(!product.foto || product.foto.length === 0) && <p style={{ color: '#888' }}>Belum ada foto.</p>}
+            )}
+            {displayPhotos[2] && (
+              <div style={{ position: 'relative' }}>
+                <img
+                  src={displayPhotos[2].file_foto && displayPhotos[2].file_foto !== 'placeholder.jpg'
+                    ? `${API_URL}/${displayPhotos[2].file_foto}`
+                    : 'https://placehold.co/100x100/e8e8e8/666'}
+                  style={{ width: '100%', height: '85px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                  alt=""
+                />
+                {hasExtra && (
+                  <div style={{
+                    position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
+                    borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#fff', fontWeight: 700, fontSize: '1.2rem'
+                  }}>
+                    +{product.foto.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* No photos */}
+            {(!product.foto || product.foto.length === 0) && (
+              <div style={{ gridColumn: '1 / 3', background: '#f0f0f0', borderRadius: '8px', padding: '2rem', textAlign: 'center', color: '#888' }}>
+                Belum ada foto.
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-          <h3 style={{ margin: 0 }}>Varian Produk</h3>
-          <button className="btn btn-outline" onClick={() => setShowVarianForm(!showVarianForm)}>
-            {showVarianForm ? 'Batal' : '+ Tambah Varian'}
-          </button>
-        </div>
+      {/* Variant Table */}
+      <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0 0 1.5rem' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, margin: 0 }}>Variasi Produk</h3>
+        <Link
+          to={`/admin/produk/${id}/varian/tambah`}
+          className="btn"
+          style={{ background: '#4caf50', color: '#fff', border: 'none', padding: '0.4rem 1.5rem' }}
+        >
+          Tambah +
+        </Link>
+      </div>
 
-        {showVarianForm && (
-          <form onSubmit={handleAddVarian} style={{ background: 'var(--bg)', padding: '1.5rem', borderRadius: '4px', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Warna</label>
-                <input type="text" className="form-control" required value={varianForm.warna} onChange={e => setVarianForm({...varianForm, warna: e.target.value})} placeholder="Misal: Merah" />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Ukuran</label>
-                <input type="text" className="form-control" required value={varianForm.ukuran} onChange={e => setVarianForm({...varianForm, ukuran: e.target.value})} placeholder="Misal: XL" />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Harga Spesifik</label>
-                <input type="number" className="form-control" required value={varianForm.harga} onChange={e => setVarianForm({...varianForm, harga: e.target.value})} placeholder="Rp..." />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Stok Spesifik</label>
-                <input type="number" className="form-control" required value={varianForm.stok} onChange={e => setVarianForm({...varianForm, stok: e.target.value})} placeholder="Jumlah stok" />
-              </div>
-            </div>
-            <button type="submit" className="btn btn-primary" disabled={savingVarian}>
-              {savingVarian ? 'Menyimpan...' : 'Simpan Varian'}
-            </button>
-          </form>
-        )}
-
-        <div className="table-responsive">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Warna</th>
-                <th>Ukuran</th>
-                <th>Harga</th>
-                <th>Stok</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {product.varian?.map(v => (
-                <tr key={v.id_varian}>
-                  <td>{v.warna}</td>
-                  <td>{v.ukuran}</td>
-                  <td>{formatRupiah(v.harga)}</td>
-                  <td>{v.stok}</td>
-                  <td>
-                    <button 
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>SKU</th>
+              <th>Warna</th>
+              <th>Ukuran</th>
+              <th>Stok</th>
+              <th>Harga</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {product.varian?.map((v, i) => (
+              <tr key={v.id_varian}>
+                <td>{i + 1}</td>
+                <td style={{ fontWeight: 600 }}>{v.sku || `M_${v.id_varian}`}</td>
+                <td>{v.warna}</td>
+                <td>{v.ukuran}</td>
+                <td>{v.stok}</td>
+                <td>{formatRupiah(v.harga)}</td>
+                <td>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <Link
+                      to={`/admin/produk/${id}/varian/${v.id_varian}`}
+                      className="btn btn-sm"
+                      style={{ background: '#e8e8e8', border: 'none', color: '#111', borderRadius: '6px' }}
+                    >
+                      Detail
+                    </Link>
+                    <Link
+                      to={`/admin/produk/${id}/varian/${v.id_varian}/edit`}
+                      className="btn btn-sm"
+                      style={{ background: '#e8e8e8', border: 'none', color: '#111', borderRadius: '6px' }}
+                    >
+                      Edit
+                    </Link>
+                    <button
                       onClick={() => handleDeleteVarian(v.id_varian)}
-                      className="btn btn-outline" 
-                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem', color: '#ff4444', borderColor: '#ff4444' }}
+                      className="btn btn-sm"
+                      style={{ background: '#111', color: '#fff', border: 'none', borderRadius: '6px' }}
                     >
                       Hapus
                     </button>
-                  </td>
-                </tr>
-              ))}
-              {(!product.varian || product.varian.length === 0) && (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', color: '#888' }}>Belum ada varian. Tambahkan varian untuk produk ini.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {(!product.varian || product.varian.length === 0) && (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', color: '#888', padding: '1.5rem' }}>
+                  Belum ada variasi produk.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

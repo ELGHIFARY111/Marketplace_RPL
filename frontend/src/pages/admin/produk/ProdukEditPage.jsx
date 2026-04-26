@@ -1,4 +1,2 @@
-﻿const ProdukEditPage = () => {
-  return <div>ProdukEditPage</div>;
-};
-export default ProdukEditPage;
+// ProdukEditPage – alias to ProdukFormPage (Edit mode via :id param)
+export { default } from './ProdukFormPage';
