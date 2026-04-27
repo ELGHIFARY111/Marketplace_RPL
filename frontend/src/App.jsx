@@ -1,20 +1,28 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from "react";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import HomePage from "./pages/customer/HomePage";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [page, setPage] = useState("login");
 
-  return (
-    <>
-      <div>
-        <h1>Marketplace Apparel</h1>
-        <p>Starter Template untuk Project Marketplace</p>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </>
-  )
+  if (page === "register") {
+    return <Register setPage={setPage} />;
+  }
+
+  if (page === "forgot-password") {
+    return <ForgotPassword setPage={setPage} />;
+  }
+
+  if (page === "reset-password") {
+    return <ResetPassword setPage={setPage} />;
+  }
+
+  if (page === "homepage") {
+  return <HomePage />;
 }
 
-export default App
+  return <Login setPage={setPage} />;
+}
