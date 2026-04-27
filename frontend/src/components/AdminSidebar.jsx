@@ -10,7 +10,7 @@ export default function AdminSidebar() {
   const linkClass = ({ isActive }) =>
     `block px-4 py-2 rounded-lg transition-all duration-200 ${
       isActive 
-        ? "bg-[#D9D9D9] font-bold" 
+        ? "bg-[#D9D9D9] font-bold shadow-md -translate-y-[5px]" 
         : "hover:bg-[#D9D9D9] hover:font-semibold cursor-pointer hover:scale-105"
     }`;
 

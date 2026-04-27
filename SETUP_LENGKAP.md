@@ -1,6 +1,17 @@
 // README untuk Setup Instructions yang lebih detail
 # Setup Instructions Lengkap
+## quick setup
+```bash
+cd Marketplace_RPL
+cd backend
+npm install
+npm run dev
 
+cd ..
+cd frontend
+npm install
+npm run dev
+```
 ## Prerequisites
 
 - Node.js (v14 atau lebih tinggi)
@@ -85,6 +96,7 @@ npm run build
 ```
 
 ---
+
 
 ## Implementasi Features
 
