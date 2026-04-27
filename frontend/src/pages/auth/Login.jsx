@@ -1,6 +1,8 @@
 import AuthLayout from "../components/AuthLayout";
+import { useNavigate } from "react-router-dom";
 
-export default function Login({ setPage }) {
+export default function login() {
+  const navigate = useNavigate();
   return (
     <AuthLayout>
       <div className="w-full max-w-xl">
@@ -26,7 +28,7 @@ export default function Login({ setPage }) {
             <p className="text-sm text-gray-500 mt-2">
                 Lupa kata sandi?{" "}
                 <button
-                    onClick={() => setPage("forgot-password")}
+                    onClick={() => navigate("forgot-password")}
                     className="text-[#b89578] cursor-pointer hover:text-[#8f6b50] hover:underline transition"
                 >
                     Klik disini
@@ -35,13 +37,13 @@ export default function Login({ setPage }) {
           </div>
 
           <button 
-            onClick={() => setPage("homepage")} className="w-full bg-[#b89578] text-white py-3 rounded-full hover:bg-[#a47f63] hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer">
+            onClick={() => navigate("")} className="w-full bg-[#b89578] text-white py-3 rounded-full hover:bg-[#a47f63] hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer">
             Masuk
           </button>
 
           <p className="text-center text-sm text-gray-500">
             Belum punya akun ?{" "}
-            <button onClick={() => setPage("register")} className="text-[#b89578] cursor-pointer hover:text-[#8f6b50] hover:underline transition">
+            <button onClick={() => navigate("register")} className="text-[#b89578] cursor-pointer hover:text-[#8f6b50] hover:underline transition">
               Registrasi disini
             </button>
           </p>

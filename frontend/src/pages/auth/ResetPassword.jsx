@@ -1,6 +1,9 @@
 import AuthLayout from "../components/AuthLayout";
 
-export default function ResetPassword({ setPage }) {
+import { useNavigate } from "react-router-dom";
+
+export default function resetPassword() {
+  const navigate = useNavigate();
   return (
     <AuthLayout>
       <div className="w-full max-w-xl">
@@ -37,7 +40,7 @@ export default function ResetPassword({ setPage }) {
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            <button onClick={() => setPage("login")} className="text-[#b89578] cursor-pointer hover:text-[#8f6b50] hover:underline transition">
+            <button onClick={() => navigate("login")} className="text-[#b89578] cursor-pointer hover:text-[#8f6b50] hover:underline transition">
               ← Kembali Kehalaman Login
             </button>
           </p>

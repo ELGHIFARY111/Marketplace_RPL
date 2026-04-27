@@ -1,61 +1,50 @@
-// Admin Profil Page Template
-import { useState, useEffect } from 'react';
+import AdminLayout from "../../layouts/AdminLayout";
 
-export default function AdminProfilPage() {
-  const [adminData, setAdminData] = useState({
-    name: '',
-    email: '',
-    role: ''
-  });
-  const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
-    // TODO: Fetch admin profile
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setAdminData({ ...adminData, [name]: value });
-  };
-
-  const handleSave = async () => {
-    // TODO: Update admin profile
-    setIsEditing(false);
-  };
-
+export default function ProfilePage() {
   return (
-    <div className="admin-profil-page">
-      <h1>Admin Profile</h1>
-      <div className="profile-section">
-        {isEditing ? (
-          <form>
-            <input
-              type="text"
-              name="name"
-              value={adminData.name}
-              onChange={handleChange}
-              placeholder="Name"
-            />
-            <input
-              type="email"
-              name="email"
-              value={adminData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              disabled
-            />
-            <button onClick={handleSave}>Save</button>
-            <button onClick={() => setIsEditing(false)}>Cancel</button>
-          </form>
-        ) : (
+    <AdminLayout>
+      <div>
+        <h1 className="text-3xl font-bold mb-6">Profil</h1>
+
+        <div className="grid grid-cols-2 gap-6">
+          {/* Nama */}
           <div>
-            <p><strong>Name:</strong> {adminData.name}</p>
-            <p><strong>Email:</strong> {adminData.email}</p>
-            <p><strong>Role:</strong> {adminData.role}</p>
-            <button onClick={() => setIsEditing(true)}>Edit</button>
+            <p className="font-semibold">Nama</p>
+            <div className="bg-gray-300 rounded-lg p-3 mt-1">
+              Arik Setiawan
+            </div>
           </div>
-        )}
+
+          {/* Password */}
+          <div>
+            <p className="font-semibold">Kata Sandi</p>
+            <div className="bg-gray-300 rounded-lg p-3 mt-1">
+              ********
+            </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <p className="font-semibold">Email</p>
+            <div className="bg-gray-300 rounded-lg p-3 mt-1">
+              arikgaming123@gmail.com
+            </div>
+          </div>
+
+          {/* No Telp */}
+          <div>
+            <p className="font-semibold">No Telepon</p>
+            <div className="bg-gray-300 rounded-lg p-3 mt-1">
+              0895319052345
+            </div>
+          </div>
+        </div>
+
+        {/* Logout */}
+        <button className="mt-6 flex items-center gap-2 text-black">
+          🚪 Keluar
+        </button>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
