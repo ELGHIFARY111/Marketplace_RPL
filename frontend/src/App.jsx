@@ -9,6 +9,12 @@ import ResetPassword from "./pages/auth/ResetPassword";
 {/* User */}
 import HomePage from "./pages/customer/HomePage";
 import DetailProdukPage from "./pages/customer/DetailProdukPage";
+import KeranjangPage from "./pages/customer/KeranjangPage";
+import ProfilPage from "./pages/customer/ProfilPage";
+import EditProfilPage from "./pages/customer/EditProfilPage";
+import RiwayatPembelianPage from "./pages/customer/RiwayatPembelianPage";
+import DetailPesananPage from "./pages/customer/DetailPesananPage";
+import CheckoutPage from "./pages/customer/CheckoutPage";
 
 {/* Admin */}
 import DashboardPage from "./pages/admin/DashboardPage";
@@ -29,6 +35,13 @@ export default function App() {
         {/* User */}
         <Route path="/" element={<HomePage />} />
         <Route path="//produk/detail" element={<DetailProdukPage />} />
+        <Route path="/keranjang" element={<KeranjangPage />} />
+        <Route path="/profil" element={<ProfilPage />} />
+        <Route path="/profil/edit" element={<EditProfilPage />} />
+        <Route path="/pesanan" element={<RiwayatPembelianPage />} />
+        <Route path="/pesanan/detail" element={<DetailPesananPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        
 
 
         {/* Admin */}

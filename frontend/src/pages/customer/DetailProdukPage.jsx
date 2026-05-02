@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ShoppingCart, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function DetailProdukPage() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -131,9 +133,12 @@ export default function DetailProdukPage() {
             </div>
 
             <div className="mt-8 flex items-center gap-4">
-              <button className="w-[340px] rounded-xl bg-black py-3 text-xl font-serif font-bold text-white hover:bg-[#b89578] transition">
-                Checkout
-              </button>
+            <button
+              onClick={() => navigate("/checkout")}
+              className="w-[340px] rounded-xl bg-black py-3 text-xl font-serif font-bold text-white hover:bg-[#b89578] transition"
+            >
+              Checkout
+            </button> 
 
               <button className="flex h-12 w-20 items-center justify-center rounded-xl bg-[#e7e1d9] hover:bg-[#d5c7ba] transition">
                 <ShoppingCart size={28} />
