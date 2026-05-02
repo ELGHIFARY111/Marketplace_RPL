@@ -12,6 +12,7 @@ import HomePage from "./pages/customer/HomePage";
 {/* Admin */}
 import DashboardPage from "./pages/admin/DashboardPage";
 import AdminProfilPage from "./pages/admin/AdminProfilPage";
+import ProdukListPage from "./pages/admin/produk/ProdukListPage";
 
 
 export default function App() {
@@ -30,7 +31,7 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin" element={<DashboardPage />} />
         <Route path="/admin/profil" element={<AdminProfilPage />} />
-        <Route path="/admin/produk-dan-stok" element={<DashboardPage />} />
+        <Route path="/admin/produk-dan-stok" element={<ProdukListPage />} />
         <Route path="/admin/pesanan" element={<DashboardPage />} />
         <Route path="/admin/promosi-kupon" element={<DashboardPage />} />
         <Route path="/admin/promosi-diskon" element={<DashboardPage />} />
