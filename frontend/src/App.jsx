@@ -8,6 +8,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 
 {/* User */}
 import HomePage from "./pages/customer/HomePage";
+import DetailProdukPage from "./pages/customer/DetailProdukPage";
 
 {/* Admin */}
 import DashboardPage from "./pages/admin/DashboardPage";
@@ -27,6 +28,8 @@ export default function App() {
 
         {/* User */}
         <Route path="/" element={<HomePage />} />
+        <Route path="//produk/detail" element={<DetailProdukPage />} />
+
 
         {/* Admin */}
         <Route path="/admin" element={<DashboardPage />} />
