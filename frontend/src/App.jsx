@@ -14,6 +14,7 @@ import DetailProdukPage from "./pages/customer/DetailProdukPage";
 import DashboardPage from "./pages/admin/DashboardPage";
 import AdminProfilPage from "./pages/admin/AdminProfilPage";
 import ProdukListPage from "./pages/admin/produk/ProdukListPage";
+import ProdukFormPage from "./pages/admin/produk/ProdukFormPage";
 
 
 export default function App() {
@@ -35,6 +36,8 @@ export default function App() {
         <Route path="/admin" element={<DashboardPage />} />
         <Route path="/admin/profil" element={<AdminProfilPage />} />
         <Route path="/admin/produk-dan-stok" element={<ProdukListPage />} />
+        <Route path="/admin/produk-dan-stok/edit" element={<ProdukFormPage />} />
+        <Route path="/admin/produk-dan-stok/tambah" element={<ProdukFormPage />} />
         <Route path="/admin/pesanan" element={<DashboardPage />} />
         <Route path="/admin/promosi-kupon" element={<DashboardPage />} />
         <Route path="/admin/promosi-diskon" element={<DashboardPage />} />

@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer components {
+    .produk-table th,
+    .produk-table td {
+        @apply border border-primary-200 p-3;
+        
+    }
+    .tombol-edit {
+        @apply bg-tombol-100 text-white px-3 py-1 rounded hover:scale-105;
+    }
+    .tombol-hapus {
+        @apply bg-tombol-200 text-white px-3 py-1 rounded hover:scale-105;
+    }
+    .tombol-tambah {
+        @apply bg-tombol-300 hover:bg-green-200 hover:scale-105 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition;
+    }
+}
