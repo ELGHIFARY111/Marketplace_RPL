@@ -119,16 +119,11 @@ const updateProduct = async (req, res) => {
   try {
     await connection.beginTransaction();
     const { id } = req.params;
-    const { name, description, category_id, price, stock } = req.body;
+    const { name, description, category_id } = req.body;
 
     await connection.query(
       'UPDATE produk SET nama_produk = ?, deskripsi = ?, id_kategori = ? WHERE id_produk = ?',
       [name, description, category_id, id]
-    );
-
-    await connection.query(
-      'UPDATE varian_produk SET harga = ?, stok = ? WHERE id_produk = ? LIMIT 1',
-      [price || 0, stock || 0, id]
     );
 
     // Handle existing images deletion

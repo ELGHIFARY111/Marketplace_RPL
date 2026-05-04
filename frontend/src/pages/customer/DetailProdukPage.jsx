@@ -98,6 +98,15 @@ export default function DetailProdukPage() {
     ? [...new Set(product.varian.map(v => v.ukuran).filter(Boolean))]
     : [];
 
+  // Hitung warna & ukuran yang tersedia berdasarkan pilihan saat ini
+  const availableSizes = selectedColor
+    ? new Set(product?.varian?.filter(v => v.warna === selectedColor).map(v => v.ukuran))
+    : new Set(uniqueSizes);
+
+  const availableColors = selectedSize
+    ? new Set(product?.varian?.filter(v => v.ukuran === selectedSize).map(v => v.warna))
+    : new Set(uniqueColors);
+
   // Build image URLs
   const imageUrls = product?.images?.length > 0
     ? product.images.map(img => `http://localhost:5000/uploads/${img}`)
@@ -229,23 +238,29 @@ export default function DetailProdukPage() {
                 </p>
 
                 <div className="mt-2 flex gap-4">
-                  {uniqueColors.map((color) => (
-                    <button
-                      key={color}
-                      title={color}
-                      onClick={() =>
-                        setSelectedColor(
-                          selectedColor === color ? null : color
-                        )
-                      }
-                      className={`h-6 w-6 rounded-full transition-all duration-200 border border-gray-300 ${
-                        selectedColor === color
-                          ? "scale-125 ring-2 ring-black ring-offset-2"
-                          : "hover:scale-110"
-                      }`}
-                      style={{ backgroundColor: colorMap[color] || colorMap["Default"] }}
-                    ></button>
-                  ))}
+                  {uniqueColors.map((color) => {
+                    const isAvailable = availableColors.has(color);
+                    return (
+                      <button
+                        key={color}
+                        title={color}
+                        disabled={!isAvailable}
+                        onClick={() =>
+                          setSelectedColor(
+                            selectedColor === color ? null : color
+                          )
+                        }
+                        className={`h-6 w-6 rounded-full transition-all duration-200 border border-gray-300 ${
+                          selectedColor === color
+                            ? "scale-125 ring-2 ring-black ring-offset-2"
+                            : isAvailable
+                              ? "hover:scale-110"
+                              : "opacity-25 cursor-not-allowed"
+                        }`}
+                        style={{ backgroundColor: colorMap[color] || colorMap["Default"] }}
+                      ></button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -256,22 +271,28 @@ export default function DetailProdukPage() {
                 <p className="text-sm">Ukuran</p>
 
                 <div className="mt-3 flex gap-5">
-                  {uniqueSizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() =>
-                        setSelectedSize(selectedSize === size ? null : size)
-                      }
-                      className={`h-8 min-w-12 border border-black px-4 font-serif transition duration-300 cursor-pointer
-                      ${
-                        selectedSize === size
-                          ? "bg-black text-white shadow-lg -translate-y-1"
-                          : "hover:bg-black hover:text-white hover:-translate-y-1 hover:shadow-xl"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {uniqueSizes.map((size) => {
+                    const isAvailable = availableSizes.has(size);
+                    return (
+                      <button
+                        key={size}
+                        disabled={!isAvailable}
+                        onClick={() =>
+                          setSelectedSize(selectedSize === size ? null : size)
+                        }
+                        className={`h-8 min-w-12 border border-black px-4 font-serif transition duration-300
+                        ${
+                          selectedSize === size
+                            ? "bg-black text-white shadow-lg -translate-y-1"
+                            : isAvailable
+                              ? "hover:bg-black hover:text-white hover:-translate-y-1 hover:shadow-xl cursor-pointer"
+                              : "opacity-25 cursor-not-allowed border-gray-400 text-gray-400"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
