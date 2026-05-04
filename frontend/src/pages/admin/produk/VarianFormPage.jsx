@@ -230,9 +230,16 @@ return (
         <div className="flex items-center gap-4">
         <label className="w-40 font-semibold">Stok</label>
         <div className="flex items-center gap-2 bg-primary-100 px-4 py-2 rounded-md">
-            <button type="button" onClick={() => handleNumber("stok", "minus")}>-</button>
-            <span>{formData.stok}</span>
-            <button type="button" onClick={() => handleNumber("stok", "plus")}>+</button>
+            <button type="button" onClick={() => handleNumber("stok", "minus")} className="font-bold px-2">-</button>
+            <input
+                type="number"
+                name="stok"
+                value={formData.stok}
+                onChange={(e) => setFormData(prev => ({ ...prev, stok: Math.max(0, parseInt(e.target.value) || 0) }))}
+                className="w-20 text-center bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                min="0"
+            />
+            <button type="button" onClick={() => handleNumber("stok", "plus")} className="font-bold px-2">+</button>
         </div>
         </div>
 
@@ -240,9 +247,16 @@ return (
         <div className="flex items-center gap-4">
         <label className="w-40 font-semibold">Harga</label>
         <div className="flex items-center gap-2 bg-primary-100 px-4 py-2 rounded-md">
-            <button type="button" onClick={() => handleNumber("harga", "minus")}>-</button>
-            <span>{formData.harga.toLocaleString("id-ID")}</span>
-            <button type="button" onClick={() => handleNumber("harga", "plus")}>+</button>
+            <button type="button" onClick={() => handleNumber("harga", "minus")} className="font-bold px-2">-</button>
+            <input
+                type="number"
+                name="harga"
+                value={formData.harga}
+                onChange={(e) => setFormData(prev => ({ ...prev, harga: Math.max(0, parseInt(e.target.value) || 0) }))}
+                className="w-32 text-center bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                min="0"
+            />
+            <button type="button" onClick={() => handleNumber("harga", "plus")} className="font-bold px-2">+</button>
         </div>
         </div>
 
