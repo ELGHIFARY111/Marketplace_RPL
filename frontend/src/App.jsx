@@ -25,6 +25,10 @@ import ProdukDetailPage from "./pages/admin/produk/ProdukDetailPage";
 import VarianFormPage from "./pages/admin/produk/VarianFormPage";
 import VarianDetailPage from "./pages/admin/produk/VarianDetailPage";
 
+{/* Route Guards */}
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
+
 
 export default function App() {
   return (
@@ -39,30 +43,31 @@ export default function App() {
         {/* User */}
         <Route path="/" element={<HomePage />} />
         <Route path="/produk/detail/:id" element={<DetailProdukPage />} />
-        <Route path="/keranjang" element={<KeranjangPage />} />
-        <Route path="/profil" element={<ProfilPage />} />
-        <Route path="/profil/edit" element={<EditProfilPage />} />
-        <Route path="/pesanan" element={<RiwayatPembelianPage />} />
-        <Route path="/pesanan/detail" element={<DetailPesananPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+        {/* User Protected */}
+        <Route path="/keranjang" element={<ProtectedRoute><KeranjangPage /></ProtectedRoute>} />
+        <Route path="/profil" element={<ProtectedRoute><ProfilPage /></ProtectedRoute>} />
+        <Route path="/profil/edit" element={<ProtectedRoute><EditProfilPage /></ProtectedRoute>} />
+        <Route path="/pesanan" element={<ProtectedRoute><RiwayatPembelianPage /></ProtectedRoute>} />
+        <Route path="/pesanan/detail" element={<ProtectedRoute><DetailPesananPage /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
         
 
 
         {/* Admin */}
-        <Route path="/admin" element={<DashboardPage />} />
-        <Route path="/admin/profil" element={<AdminProfilPage />} />
-        <Route path="/admin/produk-dan-stok" element={<ProdukListPage />} />
-        <Route path="/admin/produk-dan-stok/detail/:id" element={<ProdukDetailPage />} />
-        <Route path="/admin/produk-dan-stok/edit/:id" element={<ProdukFormPage />} />
-        <Route path="/admin/produk-dan-stok/tambah" element={<ProdukFormPage />} />
-        <Route path="/admin/varian/tambah/:productId" element={<VarianFormPage />} />
-        <Route path="/admin/varian/edit/:id" element={<VarianFormPage />} />
-        <Route path="/admin/varian/detail/:id" element={<VarianDetailPage />} />
-        <Route path="/admin/pesanan" element={<DashboardPage />} />
-        <Route path="/admin/promosi-kupon" element={<DashboardPage />} />
-        <Route path="/admin/promosi-diskon" element={<DashboardPage />} />
-        <Route path="/admin/akun-dan-akses" element={<DashboardPage />} />
-        <Route path="/admin/cs" element={<DashboardPage />} />
+        <Route path="/admin" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/profil" element={<AdminRoute><AdminProfilPage /></AdminRoute>} />
+        <Route path="/admin/produk-dan-stok" element={<AdminRoute><ProdukListPage /></AdminRoute>} />
+        <Route path="/admin/produk-dan-stok/detail/:id" element={<AdminRoute><ProdukDetailPage /></AdminRoute>} />
+        <Route path="/admin/produk-dan-stok/edit/:id" element={<AdminRoute><ProdukFormPage /></AdminRoute>} />
+        <Route path="/admin/produk-dan-stok/tambah" element={<AdminRoute><ProdukFormPage /></AdminRoute>} />
+        <Route path="/admin/varian/tambah/:productId" element={<AdminRoute><VarianFormPage /></AdminRoute>} />
+        <Route path="/admin/varian/edit/:id" element={<AdminRoute><VarianFormPage /></AdminRoute>} />
+        <Route path="/admin/varian/detail/:id" element={<AdminRoute><VarianDetailPage /></AdminRoute>} />
+        <Route path="/admin/pesanan" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/promosi-kupon" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/promosi-diskon" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/akun-dan-akses" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/cs" element={<AdminRoute><DashboardPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   );
