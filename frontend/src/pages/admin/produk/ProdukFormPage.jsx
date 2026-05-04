@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
+import api from "../../../services/api";
 
 export default function ProdukFormPage() {
   const { id } = useParams();
@@ -15,17 +16,16 @@ export default function ProdukFormPage() {
   
   const [categories, setCategories] = useState([]);
   const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
 
 
   useEffect(() => {
       const fetchKategori = async () => {
         try {
-          const res = await fetch("http://localhost:5000/api/categories");
-          const data = await res.json();
+          const res = await api.get("/categories");
+          const data = res.data;
           
-          console.log("Response Kategori dari API:", data);
-
           if (Array.isArray(data)) {
             setCategories(data);
           } else if (data && data.data && Array.isArray(data.data)) {
@@ -45,8 +45,8 @@ export default function ProdukFormPage() {
     if (id) {
       const fetchProduct = async () => {
         try {
-          const res = await fetch(`http://localhost:5000/api/produk/${id}`);
-          const data = await res.json();
+          const res = await api.get(`/produk/${id}`);
+          const data = res.data;
 
           setFormData({
             name: data.name || "",
@@ -54,6 +54,10 @@ export default function ProdukFormPage() {
             category_id: data.category_id || "",
           });
           
+          if (data.images && data.images.length > 0) {
+            setExistingImages(data.images);
+            setPreviewUrls(data.images.map(img => `http://localhost:5000/uploads/${img}`));
+          }
 
         } catch (err) {
           console.log(err);
@@ -84,7 +88,12 @@ export default function ProdukFormPage() {
 
 
   const handleRemoveImage = (indexToRemove) => {
-    setImages((prev) => prev.filter((_, index) => index !== indexToRemove));
+    if (indexToRemove < existingImages.length) {
+      setExistingImages((prev) => prev.filter((_, index) => index !== indexToRemove));
+    } else {
+      const newImageIndex = indexToRemove - existingImages.length;
+      setImages((prev) => prev.filter((_, index) => index !== newImageIndex));
+    }
     setPreviewUrls((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
@@ -92,14 +101,6 @@ export default function ProdukFormPage() {
     e.preventDefault();
 
     try {
-      let url = "http://localhost:5000/api/produk";
-      let method = "POST";
-
-      if (id) {
-        url = `http://localhost:5000/api/produk/${id}`;
-        method = "PUT";
-      }
-
       const submitData = new FormData();
       submitData.append("name", formData.name);
       submitData.append("description", formData.description);
@@ -108,28 +109,27 @@ export default function ProdukFormPage() {
       images.forEach((image) => {
         submitData.append("images", image);
       });
-
-
-      const token = localStorage.getItem("token"); 
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        body: submitData, 
+      
+      existingImages.forEach((img) => {
+        submitData.append("existing_images", img);
       });
 
-      if (res.ok) {
-        alert("Berhasil menyimpan data!");
-        navigate("/admin/produk"); 
+      let res;
+      if (id) {
+        res = await api.put(`/produk/${id}`, submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       } else {
-        const errorData = await res.json();
-        alert(`Gagal menyimpan data: ${errorData.message || 'Unauthorized'}`);
+        res = await api.post("/produk", submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       }
+
+      alert("Berhasil menyimpan data!");
+      navigate("/admin/produk-dan-stok");
     } catch (err) {
-      console.log(err);
-      alert("Terjadi kesalahan pada server.");
+      const msg = err.response?.data?.message || err.response?.data?.error || "Terjadi kesalahan pada server.";
+      alert(`Gagal menyimpan data: ${msg}`);
     }
   };
 

@@ -22,6 +22,8 @@ import AdminProfilPage from "./pages/admin/AdminProfilPage";
 import ProdukListPage from "./pages/admin/produk/ProdukListPage";
 import ProdukFormPage from "./pages/admin/produk/ProdukFormPage";
 import ProdukDetailPage from "./pages/admin/produk/ProdukDetailPage";
+import VarianFormPage from "./pages/admin/produk/VarianFormPage";
+import VarianDetailPage from "./pages/admin/produk/VarianDetailPage";
 
 
 export default function App() {
@@ -36,7 +38,7 @@ export default function App() {
 
         {/* User */}
         <Route path="/" element={<HomePage />} />
-        <Route path="//produk/detail" element={<DetailProdukPage />} />
+        <Route path="/produk/detail/:id" element={<DetailProdukPage />} />
         <Route path="/keranjang" element={<KeranjangPage />} />
         <Route path="/profil" element={<ProfilPage />} />
         <Route path="/profil/edit" element={<EditProfilPage />} />
@@ -53,6 +55,9 @@ export default function App() {
         <Route path="/admin/produk-dan-stok/detail/:id" element={<ProdukDetailPage />} />
         <Route path="/admin/produk-dan-stok/edit/:id" element={<ProdukFormPage />} />
         <Route path="/admin/produk-dan-stok/tambah" element={<ProdukFormPage />} />
+        <Route path="/admin/varian/tambah/:productId" element={<VarianFormPage />} />
+        <Route path="/admin/varian/edit/:id" element={<VarianFormPage />} />
+        <Route path="/admin/varian/detail/:id" element={<VarianDetailPage />} />
         <Route path="/admin/pesanan" element={<DashboardPage />} />
         <Route path="/admin/promosi-kupon" element={<DashboardPage />} />
         <Route path="/admin/promosi-diskon" element={<DashboardPage />} />

@@ -6,13 +6,19 @@ const getAllProducts = async (req, res) => {
       SELECT 
         p.id_produk,
         p.nama_produk AS nama,
+        p.deskripsi,
         COALESCE(SUM(v.stok), 0) AS stok,
-        c.nama_kategori AS kategori
+        COALESCE(MIN(v.harga), 0) AS harga,
+        c.nama_kategori AS kategori,
+        (SELECT file_foto FROM foto_produk WHERE id_produk = p.id_produk LIMIT 1) AS foto,
+        (SELECT ROUND(AVG(rating), 1) FROM ulasan WHERE id_produk = p.id_produk) AS avg_rating,
+        (SELECT COUNT(*) FROM ulasan WHERE id_produk = p.id_produk) AS total_ulasan,
+        GROUP_CONCAT(DISTINCT v.warna) AS warna_list,
+        GROUP_CONCAT(DISTINCT v.ukuran) AS ukuran_list
       FROM produk p
       LEFT JOIN kategori c ON p.id_kategori = c.id_kategori
-      -- FIX: Relasi menggunakan id_produk, bukan id_varian
       LEFT JOIN varian_produk v ON v.id_produk = p.id_produk 
-      GROUP BY p.id_produk, p.nama_produk, c.nama_kategori
+      GROUP BY p.id_produk, p.nama_produk, p.deskripsi, c.nama_kategori
     `);
 
     res.json(rows);
@@ -25,21 +31,43 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const [produk] = await db.query('SELECT * FROM produk WHERE id_produk = ?', [id]);
+    // Fetch produk + kategori
+    const [produk] = await db.query(
+      `SELECT p.*, c.nama_kategori AS kategori 
+       FROM produk p 
+       LEFT JOIN kategori c ON p.id_kategori = c.id_kategori 
+       WHERE p.id_produk = ?`, 
+      [id]
+    );
     if (produk.length === 0) return res.status(404).json({ message: "Produk tidak ditemukan" });
 
-    const [varian] = await db.query('SELECT harga, stok FROM varian_produk WHERE id_produk = ? LIMIT 1', [id]);
+    // Fetch semua varian
+    const [varian] = await db.query(
+      'SELECT id_varian, warna, ukuran, harga, stok FROM varian_produk WHERE id_produk = ?', 
+      [id]
+    );
     
+    // Fetch semua foto
     const [foto] = await db.query('SELECT file_foto FROM foto_produk WHERE id_produk = ?', [id]);
+
+    // Fetch rata-rata rating
+    const [ratingResult] = await db.query(
+      'SELECT ROUND(AVG(rating), 1) AS avg_rating, COUNT(*) AS total_ulasan FROM ulasan WHERE id_produk = ?', 
+      [id]
+    );
 
     const productData = {
       id_produk: produk[0].id_produk,
       name: produk[0].nama_produk,
       description: produk[0].deskripsi,
       category_id: produk[0].id_kategori,
-      price: varian.length > 0 ? varian[0].harga : 0,
-      stock: varian.length > 0 ? varian[0].stok : 0,
-      images: foto.map(f => f.file_foto) 
+      kategori: produk[0].kategori,
+      price: varian.length > 0 ? Math.min(...varian.map(v => v.harga)) : 0,
+      stock: varian.reduce((sum, v) => sum + v.stok, 0),
+      images: foto.map(f => f.file_foto),
+      varian: varian,
+      avg_rating: ratingResult[0]?.avg_rating || 0,
+      total_ulasan: ratingResult[0]?.total_ulasan || 0
     };
 
     res.json(productData);
@@ -103,6 +131,19 @@ const updateProduct = async (req, res) => {
       [price || 0, stock || 0, id]
     );
 
+    // Handle existing images deletion
+    let existing_images = req.body.existing_images || [];
+    if (!Array.isArray(existing_images)) {
+      existing_images = [existing_images];
+    }
+
+    const [currentPhotos] = await connection.query('SELECT file_foto FROM foto_produk WHERE id_produk = ?', [id]);
+    const currentFilenames = currentPhotos.map(p => p.file_foto);
+    const photosToDelete = currentFilenames.filter(f => !existing_images.includes(f));
+
+    if (photosToDelete.length > 0) {
+      await connection.query('DELETE FROM foto_produk WHERE id_produk = ? AND file_foto IN (?)', [id, photosToDelete]);
+    }
 
     if (req.files && req.files.length > 0) {
       const fotoQueries = req.files.map(file => {
@@ -146,10 +187,21 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const getVarianByProductId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [varians] = await db.query('SELECT * FROM varian_produk WHERE id_produk = ?', [id]);
+    res.json(varians);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getVarianByProductId
 };

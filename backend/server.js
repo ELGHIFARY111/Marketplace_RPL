@@ -15,6 +15,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/produk', require('./routes/produk.routes'));
+app.use('/api/varian', require('./routes/varian.routes'));
 app.use('/api/categories', require('./routes/kategori.routes'));
 app.use('/api/keranjang', require('./routes/keranjang.routes'));
 app.use('/api/pesanan', require('./routes/pesanan.routes'));

@@ -14,6 +14,7 @@ export default function ProdukDetailPage() {
   });
   
   const [categories, setCategories] = useState([]);
+  const [varians, setVarians] = useState([]);
   const [images, setImages] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
 
@@ -53,6 +54,24 @@ export default function ProdukDetailPage() {
             description: data.description || "",
             category_id: data.category_id || "",
           });
+
+          // Fetch foto produk
+          if (data.images && Array.isArray(data.images)) {
+            const fotoUrls = data.images.map(img => `http://localhost:5000/uploads/${img}`);
+            setPreviewUrls(fotoUrls);
+          }
+
+          // Fetch varian produk
+          try {
+            const varRes = await fetch(`http://localhost:5000/api/produk/${id}/varian`);
+            if (varRes.ok) {
+              const varData = await varRes.json();
+              setVarians(Array.isArray(varData) ? varData : []);
+            }
+          } catch (err) {
+            console.log("Error fetch varian:", err);
+            setVarians([]);
+          }
           
 
         } catch (err) {
@@ -71,6 +90,41 @@ export default function ProdukDetailPage() {
   };
   const handleEdit = (id_produk) => {
     navigate(`/admin/produk-dan-stok/edit/${id_produk}`);
+  };
+
+  const handleTambahVarian = () => {
+    navigate(`/admin/varian/tambah/${id}`);
+  };
+
+  const handleEditVarian = (varianId) => {
+    navigate(`/admin/varian/edit/${varianId}`);
+  };
+
+  const handleDetailVarian = (varianId) => {
+    navigate(`/admin/varian/detail/${varianId}`);
+  };
+
+  const handleDeleteVarian = async (varianId) => {
+    if (!confirm("Yakin mau hapus varian?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/varian/${varianId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        setVarians(varians.filter(v => v.id_varian !== varianId));
+        alert("Varian berhasil dihapus");
+      } else {
+        alert("Gagal menghapus varian");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleFileChange = (e) => {
@@ -174,7 +228,7 @@ export default function ProdukDetailPage() {
           <div className="flex items-center gap-4">
             <label className="w-40 font-semibold">Kategori Produk</label>
             <div className="bg-primary-100 px-4 py-2 rounded-md w-[300px] shadow-inner">
-              {categories.find(c => c.id == formData.category_id)?.name || "-"}
+              {categories.find(c => c.id_kategori == formData.category_id)?.nama_kategori || "-"}
             </div>
           </div>
 
@@ -227,7 +281,7 @@ export default function ProdukDetailPage() {
         <div className="flex justify-between items-center mb-3">
           <h2 className="font-bold text-lg">Variasi Produk</h2>
 
-          <button className="tombol-tambah">
+          <button onClick={handleTambahVarian} className="tombol-tambah">
             Tambah +
           </button>
         </div>
@@ -247,30 +301,44 @@ export default function ProdukDetailPage() {
             </thead>
 
             <tbody>
-              {/* contoh dummy biar mirip UI */}
-              {[1,2,3].map((i) => (
-                <tr key={i} className="text-center">
-                  <td>{i}</td>
-                  <td>M_{200+i}</td>
-                  <td>Merah</td>
-                  <td>L</td>
-                  <td>100</td>
-                  <td>Rp. 149.000</td>
-                  <td className=" max-w-[100px]">
-                    <div className="flex justify-center gap-2">
-                      <button className="tombol-edit">
-                        Detail
-                      </button>
-                      <button className="tombol-edit">
-                        Edit
-                      </button>
-                      <button className="tombol-hapus">
-                        Hapus
-                      </button>
-                    </div>
-                  </td>
+              {varians.length > 0 ? (
+                varians.map((varian) => (
+                  <tr key={varian.id_varian} className="text-center">
+                    <td className="p-2 border">{varian.id_varian}</td>
+                    <td className="p-2 border">{varian.sku}</td>
+                    <td className="p-2 border">{varian.warna}</td>
+                    <td className="p-2 border">{varian.ukuran}</td>
+                    <td className="p-2 border">{varian.stok}</td>
+                    <td className="p-2 border">Rp. {varian.harga?.toLocaleString('id-ID')}</td>
+                    <td className="p-2 border max-w-[100px]">
+                      <div className="flex justify-center gap-2">
+                        <button 
+                          onClick={() => handleDetailVarian(varian.id_varian)}
+                          className="tombol-edit"
+                        >
+                          Detail
+                        </button>
+                        <button 
+                          onClick={() => navigate(`/admin/varian/edit/${varian.id_varian}`)}
+                          className="tombol-edit"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteVarian(varian.id_varian)}
+                          className="tombol-hapus"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="p-4 text-center text-gray-500">Tidak ada varian</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

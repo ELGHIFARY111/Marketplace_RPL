@@ -20,6 +20,7 @@ const upload = multer({ storage: storage });
 
 router.get('/', produkController.getAllProducts);
 router.get('/:id', produkController.getProductById);
+router.get('/:id/varian', produkController.getVarianByProductId);
 
 
 router.post('/', authenticateToken, upload.array('images', 10), produkController.createProduct);
