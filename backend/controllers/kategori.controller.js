@@ -1,9 +1,9 @@
-// Template untuk Category Controller
+const db = require('../config/db');
 
 const getAllCategories = async (req, res) => {
   try {
-    // TODO: Query categories dari database
-    res.json({ message: 'Get all categories' });
+    const [rows] = await db.query('SELECT * FROM kategori');
+    res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -12,8 +12,8 @@ const getAllCategories = async (req, res) => {
 const getCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
-    // TODO: Query category dari database
-    res.json({ message: `Get category ${id}` });
+    const [rows] = await db.query('SELECT * FROM kategori where id_kategori='+id);
+    res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

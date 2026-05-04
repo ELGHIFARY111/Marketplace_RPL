@@ -135,22 +135,20 @@ export default function ProdukFormPage() {
 
   return (
     <AdminLayout>
-      <div className="min-h-screen bg-white p-6 font-sans">
-        <div className="max-w-5xl mx-auto">
+
           
           {/* Header Section */}
-          <div className="flex justify-between items-end border-b-2 border-gray-200 pb-4 mb-8">
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-4xl font-serif font-bold text-black">Produk dan Stok</h1>
-              <span className="text-md text-black font-semibold">
+          <div className="page-header flex items-end gap-0 ">
+            <h1 className="text-[3rem] font-bold ml-1">Produk Dan Stok</h1>
+              <span className="btn-add text-[1.5rem] font-bold mb-2 ml-2">
                 Produk &gt; {id ? "edit" : "tambah"}
               </span>
-            </div>
-            
-            <div className="flex gap-4">
+          </div>
+          <div className="w-full h-[2px] bg-primary-200 mb-3"></div>
+            <div className="flex justify-end gap-4">
               <button 
                 type="button"
-                onClick={() => navigate("/admin/produk")}
+                onClick={() => navigate("/admin/produk-dan-stok")}
                 className="bg-[#A6A6A6] hover:bg-gray-500 text-white font-bold py-2 px-8 rounded-md transition"
               >
                 Batal
@@ -163,7 +161,6 @@ export default function ProdukFormPage() {
                 Simpan
               </button>
             </div>
-          </div>
 
           {/* Form Body */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -194,16 +191,11 @@ export default function ProdukFormPage() {
               >
                 <option value="" disabled hidden>Masukkan Kategori...</option>
                 
-                {/* 🔥 PERBAIKAN DI SINI: Tambahkan Array.isArray */}
                 {Array.isArray(categories) && categories.map((cat) => (
                   <option key={cat.id_kategori || cat.id} value={cat.id_kategori || cat.id}>
                     {cat.nama_kategori || cat.name}
                   </option>
                 ))}
-                
-                {/* Dummy options jika fetch belum jalan */}
-                <option value="1">Kaos</option>
-                <option value="2">Kemeja</option>
               </select>
             </div>
 
@@ -240,7 +232,6 @@ export default function ProdukFormPage() {
                 className="hidden"
               />
             </div>
-
             {/* Foto Produk Area */}
             <div className="ml-[13rem]"> 
               {previewUrls.length === 0 ? (
@@ -276,10 +267,7 @@ export default function ProdukFormPage() {
                 </div>
               )}
             </div>
-
           </form>
-        </div>
-      </div>
     </AdminLayout>
   );
 }

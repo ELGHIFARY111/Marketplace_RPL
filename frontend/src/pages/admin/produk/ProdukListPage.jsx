@@ -29,6 +29,9 @@ export default function ProdukListPage() {
   const handleEdit = (id_produk) => {
     navigate(`/admin/produk-dan-stok/edit/${id_produk}`);
   };
+  const handleDetail = (id_produk) => {
+    navigate(`/admin/produk-dan-stok/detail/${id_produk}`);
+  };
 
   const handleDelete = async (id) => {
     if (!confirm("Yakin mau hapus produk?")) return;
@@ -96,6 +99,7 @@ export default function ProdukListPage() {
                     <td>{produk.stok}</td>
                     <td>{produk.kategori}</td>
                     <td className="text-center flex justify-center gap-2">
+                      <button className="tombol-edit" onClick={() => handleDetail(produk.id_produk)}>Detail</button>
                       <button className="tombol-edit" onClick={() => handleEdit(produk.id_produk)}>Edit</button>
                       <button className="tombol-hapus" onClick={() => handleDelete(produk.id_produk)}>Delete</button>
                     </td>
