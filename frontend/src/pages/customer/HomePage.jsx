@@ -168,8 +168,9 @@ export default function HomePage() {
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="min-h-screen bg-[#f3efe9] text-black">
+    <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
       <Navbar />
+      <main className="flex-1">
 
       <section id="hero" className="relative h-[520px] overflow-hidden">
         <img
@@ -480,6 +481,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      </main>
       <Footer />
     </div>
   );

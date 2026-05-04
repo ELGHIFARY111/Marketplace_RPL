@@ -72,9 +72,9 @@ export default function EditProfilPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#e5e5e5] text-black">
+      <div className="min-h-screen bg-[#e5e5e5] text-black flex flex-col">
         <Navbar />
-        <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex-1 flex items-center justify-center h-[60vh]">
           <p className="text-gray-500 text-lg">Memuat formulir...</p>
         </div>
         <Footer />
@@ -84,10 +84,10 @@ export default function EditProfilPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
-      <div className="mx-auto max-w-7xl bg-[#f3efe9]">
+      <div className="mx-auto max-w-7xl bg-[#f3efe9] min-h-screen flex flex-col">
         <Navbar />
 
-        <main className="px-20 py-14">
+        <main className="px-20 py-14 flex-1">
           <div className="mx-auto max-w-4xl">
             <div className="mb-6 flex items-center gap-4">
               <User size={42} className="fill-black" />

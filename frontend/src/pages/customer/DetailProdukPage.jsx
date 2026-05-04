@@ -139,9 +139,9 @@ export default function DetailProdukPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3efe9] text-black">
+      <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
         <Navbar />
-        <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex-1 flex items-center justify-center h-[60vh]">
           <p className="text-gray-500 text-lg">Memuat produk...</p>
         </div>
         <Footer />
@@ -151,9 +151,9 @@ export default function DetailProdukPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#f3efe9] text-black">
+      <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
         <Navbar />
-        <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex-1 flex items-center justify-center h-[60vh]">
           <p className="text-gray-500 text-lg">Produk tidak ditemukan</p>
         </div>
         <Footer />
@@ -162,10 +162,10 @@ export default function DetailProdukPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f3efe9] text-black">
+    <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
       <Navbar />
 
-      <main className="px-20 py-14">
+      <main className="px-20 py-14 flex-1">
         <div className="grid grid-cols-2 gap-16">
           {/* LEFT IMAGE */}
           <section>
