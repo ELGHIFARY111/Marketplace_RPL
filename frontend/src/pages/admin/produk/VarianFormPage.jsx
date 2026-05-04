@@ -18,6 +18,18 @@ const [formData, setFormData] = useState({
 
 const [varians, setVarians] = useState([]);
 
+// Fetch varian list berdasarkan product_id
+const fetchVarianList = async (prodId) => {
+    try {
+        const res = await fetch(`http://localhost:5000/api/produk/${prodId}/varian`);
+        const data = await res.json();
+        setVarians(Array.isArray(data) ? data : []);
+    } catch (err) {
+        console.log("Error fetch varian list:", err);
+        setVarians([]);
+    }
+};
+
 // 🔥 fetch data edit
 useEffect(() => {
     if (isEdit && id) {
@@ -34,15 +46,14 @@ useEffect(() => {
         });
 
         // fetch list varian
-        fetch(`http://localhost:5000/api/produk/${data.product_id}/varian`)
-            .then(res => res.json())
-            .then(res => setVarians(res));
-        });
+        if (data.product_id) {
+            fetchVarianList(data.product_id);
+        }
+        })
+        .catch(err => console.log("Error fetch varian:", err));
     } else if (productId) {
         // Mode tambah - fetch list varian dari productId
-        fetch(`http://localhost:5000/api/produk/${productId}/varian`)
-            .then(res => res.json())
-            .then(res => setVarians(res));
+        fetchVarianList(productId);
     }
 }, [id, productId, isEdit]);
 
@@ -63,6 +74,31 @@ const handleNumber = (field, type) => {
     }));
 };
 
+// 🔥 delete varian
+const handleDeleteVarian = async (varianId) => {
+    if (!confirm("Yakin mau hapus varian ini?")) return;
+
+    try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`http://localhost:5000/api/varian/${varianId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (res.ok) {
+            setVarians(prev => prev.filter(v => v.id_varian !== varianId));
+            alert("Varian berhasil dihapus");
+        } else {
+            alert("Gagal menghapus varian");
+        }
+    } catch (err) {
+        console.log("Error delete varian:", err);
+        alert("Terjadi kesalahan saat menghapus varian");
+    }
+};
+
 // 🔥 submit
 const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,23 +114,39 @@ const handleSubmit = async (e) => {
 
     const token = localStorage.getItem("token");
 
+    // Pastikan product_id terkirim (dari URL param jika mode tambah)
+    const submitData = {
+        ...formData,
+        product_id: formData.product_id || productId,
+        stok: Number(formData.stok),
+        harga: Number(formData.harga),
+    };
+
     const res = await fetch(url, {
         method,
         headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
     });
 
     if (res.ok) {
         alert("Berhasil disimpan!");
-        navigate(-1);
+        // Navigate kembali ke detail produk
+        const pid = formData.product_id || productId;
+        if (pid) {
+            navigate(`/admin/produk-dan-stok/detail/${pid}`);
+        } else {
+            navigate(-1);
+        }
     } else {
-        alert("Gagal menyimpan!");
+        const errData = await res.json();
+        alert(`Gagal menyimpan: ${errData.message || errData.error || 'Unknown error'}`);
     }
     } catch (err) {
     console.log(err);
+    alert("Terjadi kesalahan pada server.");
     }
 };
 
@@ -228,7 +280,10 @@ return (
 
                 <td className="p-2 border">
                     <div className="flex justify-center gap-2">
-                    <button className="bg-gray-400 text-white px-2 py-1 rounded text-sm">
+                    <button 
+                        onClick={() => navigate(`/admin/varian/detail/${v.id_varian}`)}
+                        className="bg-gray-400 text-white px-2 py-1 rounded text-sm"
+                    >
                         Detail
                     </button>
                     <button
@@ -237,7 +292,10 @@ return (
                     >
                         Edit
                     </button>
-                    <button className="bg-black text-white px-2 py-1 rounded text-sm">
+                    <button 
+                        onClick={() => handleDeleteVarian(v.id_varian)}
+                        className="bg-black text-white px-2 py-1 rounded text-sm"
+                    >
                         Hapus
                     </button>
                     </div>

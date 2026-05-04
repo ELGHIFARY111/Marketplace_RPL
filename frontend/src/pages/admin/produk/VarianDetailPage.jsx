@@ -57,10 +57,12 @@ const handleDeleteVarian = async (varianId) => {
             setVarians(varians.filter(v => v.id_varian !== varianId));
             alert("Varian berhasil dihapus");
         } else {
-            alert("Gagal menghapus varian");
+            const errData = await res.json();
+            alert(errData.message || "Gagal menghapus varian");
         }
     } catch (err) {
         console.log(err);
+        alert("Terjadi kesalahan saat menghapus varian");
     }
 };
 
