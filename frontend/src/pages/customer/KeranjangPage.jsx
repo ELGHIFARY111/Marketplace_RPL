@@ -44,8 +44,8 @@ export default function KeranjangPage() {
   const total = subtotal + shipping + tax;
 
   return (
-    <div className="min-h-screen bg-[#e5e5e5] text-black">
-      <div className="w-full bg-[#f3efe9] min-h-screen flex flex-col">
+    <div className="min-h-screen bg-[#f3efe9] text-black">
+      <div className="w-full min-h-screen flex flex-col">
         <Navbar />
 
         <main className="px-16 py-8 flex-1">

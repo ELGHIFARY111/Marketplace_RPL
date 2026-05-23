@@ -46,10 +46,10 @@ export default function ProfilPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
-      <div className="w-full bg-[#f3efe9] min-h-screen flex flex-col">
+      <div className="w-full bg-[#f3efe9]">
         <Navbar />
 
-        <main className="px-20 py-14 flex-1">
+        <main className="px-6 py-14">
           <div className="mx-auto max-w-4xl">
             <div className="mb-6 flex items-center gap-4">
               <User size={42} className="fill-black" />
