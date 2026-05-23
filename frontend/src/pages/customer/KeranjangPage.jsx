@@ -45,7 +45,7 @@ export default function KeranjangPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
-      <div className="mx-auto max-w-7xl bg-[#f3efe9] min-h-screen flex flex-col">
+      <div className="w-full bg-[#f3efe9] min-h-screen flex flex-col">
         <Navbar />
 
         <main className="px-16 py-8 flex-1">
