@@ -5,10 +5,10 @@ import { ShoppingCart } from "lucide-react";
 export default function DetailPesananPage() {
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
-      <div className="mx-auto max-w-7xl bg-[#f3efe9]">
+      <div className="mx-auto max-w-7xl bg-[#f3efe9] min-h-screen flex flex-col">
         <Navbar />
 
-        <main className="px-20 py-10">
+        <main className="px-20 py-10 flex-1">
           <div className="mb-4 flex items-center gap-3">
             <h1 className="text-4xl font-serif">Detail Pesanan</h1>
             <ShoppingCart size={28} />

@@ -34,9 +34,9 @@ export default function ProfilPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#e5e5e5] text-black">
+      <div className="min-h-screen bg-[#e5e5e5] text-black flex flex-col">
         <Navbar />
-        <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex-1 flex items-center justify-center">
           <p className="text-gray-500 text-lg">Memuat profil...</p>
         </div>
         <Footer />
