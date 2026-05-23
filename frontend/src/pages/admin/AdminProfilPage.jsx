@@ -1,61 +1,73 @@
+import { useState, useEffect, useContext } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
+import { User, LogOut, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api"; // sama seperti user
+import { AuthContext } from "../../context/AuthContext";
 
-export default function ProfilePage() {
+export default function AdminProfile() {
+  const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/admin/profile"); // endpoint admin
+        setProfile(res.data);
+      } catch (error) {
+        console.error("Gagal memuat profil admin:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth/login");
+  };
+
+  if (loading) return <AdminLayout>Memuat profil...</AdminLayout>;
+
   return (
     <AdminLayout>
       <div>
-        <div className="flex items-center gap-0">
-          <img
-              src="../icon/icon_user.png"
-              alt="icon_profil"
-              className="right-[4rem] w-[60px] object-contain z-0"
-            /> 
-          <h1 className="text-[3rem] font-bold ml-1">Profil</h1>
+        <div className="flex items-center gap-4 mb-6">
+          <User size={42} />
+          <h1 className="text-4xl font-bold">Profil Admin</h1>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          {/* Nama */}
+        <section className="grid grid-cols-2 gap-6">
           <div>
             <p className="font-semibold">Nama</p>
-            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">
-              Arik Setiawan
-            </div>
+            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">{profile?.nama_lengkap || "-"}</div>
           </div>
 
-          {/* Password */}
-          <div>
-            <p className="font-semibold">Kata Sandi</p>
-            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">
-              ********
-            </div>
-          </div>
-
-          {/* Email */}
           <div>
             <p className="font-semibold">Email</p>
-            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">
-              arikgaming123@gmail.com
-            </div>
+            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">{profile?.email || "-"}</div>
           </div>
 
-          {/* No Telp */}
           <div>
             <p className="font-semibold">No Telepon</p>
-            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">
-              0895319052345
-            </div>
+            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">{profile?.no_telp || "-"}</div>
           </div>
-        </div>
 
-        {/* Logout */}
-        <button className="mt-6 flex items-center gap-2 text-[20px] font-serif ml-auto">
-          <img
-            src="../icon/icon_keluar.png"
-            alt="icon_keluar"
-            className="right-[4rem] w-[20px] object-contain z-0"
-          /> 
-          Keluar
-        </button>
+          <div>
+            <p className="font-semibold">Role</p>
+            <div className="bg-[#F3EFEC] rounded-lg p-3 mt-1">{profile?.role || "Admin"}</div>
+          </div>
+        </section>
+
+        <div className="mt-6 flex justify-end">
+          <button onClick={handleLogout} className="flex items-center gap-2 font-bold hover:text-red-500 transition">
+            <LogOut size={22} />
+            Keluar
+          </button>
+        </div>
       </div>
     </AdminLayout>
   );
