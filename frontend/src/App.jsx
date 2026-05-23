@@ -19,6 +19,7 @@ import CheckoutPage from "./pages/customer/CheckoutPage";
 {/* Admin */}
 import DashboardPage from "./pages/admin/DashboardPage";
 import AdminProfilPage from "./pages/admin/AdminProfilPage";
+import AdminEditProfile from "./pages/admin/AdminEditProfile";
 import ProdukListPage from "./pages/admin/produk/ProdukListPage";
 import ProdukFormPage from "./pages/admin/produk/ProdukFormPage";
 import ProdukDetailPage from "./pages/admin/produk/ProdukDetailPage";
@@ -50,12 +51,11 @@ export default function App() {
         <Route path="/pesanan" element={<ProtectedRoute><RiwayatPembelianPage /></ProtectedRoute>} />
         <Route path="/pesanan/detail" element={<ProtectedRoute><DetailPesananPage /></ProtectedRoute>} />
         <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-        
-
 
         {/* Admin */}
         <Route path="/admin" element={<AdminRoute><DashboardPage /></AdminRoute>} />
         <Route path="/admin/profil" element={<AdminRoute><AdminProfilPage /></AdminRoute>} />
+        <Route path="/admin/profil/edit" element={<AdminEditProfile />} />
         <Route path="/admin/produk-dan-stok" element={<AdminRoute><ProdukListPage /></AdminRoute>} />
         <Route path="/admin/produk-dan-stok/detail/:id" element={<AdminRoute><ProdukDetailPage /></AdminRoute>} />
         <Route path="/admin/produk-dan-stok/edit/:id" element={<AdminRoute><ProdukFormPage /></AdminRoute>} />
