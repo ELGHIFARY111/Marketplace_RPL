@@ -7,22 +7,22 @@ import { ShoppingCart, Star } from "lucide-react";
 
 // Map nama warna Indonesia ke hex color
 const colorMap = {
-  "Hitam": "#000000",
-  "Putih": "#FFFFFF",
-  "Merah": "#EF4444",
-  "Biru": "#3B82F6",
-  "Hijau": "#22C55E",
-  "Kuning": "#EAB308",
-  "Pink": "#EC4899",
-  "Coklat": "#92400E",
+  Hitam: "#000000",
+  Putih: "#FFFFFF",
+  Merah: "#EF4444",
+  Biru: "#3B82F6",
+  Hijau: "#22C55E",
+  Kuning: "#EAB308",
+  Pink: "#EC4899",
+  Coklat: "#92400E",
   "Abu-abu": "#9CA3AF",
-  "Orange": "#F97316",
-  "Cream": "#FFFDD0",
-  "Navy": "#1E3A5F",
-  "Maroon": "#800000",
-  "Ungu": "#A855F7",
-  "Beige": "#F5F5DC",
-  "Default": "#D1D5DB",
+  Orange: "#F97316",
+  Cream: "#FFFDD0",
+  Navy: "#1E3A5F",
+  Maroon: "#800000",
+  Ungu: "#A855F7",
+  Beige: "#F5F5DC",
+  Default: "#D1D5DB",
 };
 
 export default function DetailProdukPage() {
@@ -34,6 +34,7 @@ export default function DetailProdukPage() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [addingCart, setAddingCart] = useState(false);
 
   // Harga yang berubah sesuai varian terpilih
   const [currentPrice, setCurrentPrice] = useState(0);
@@ -41,11 +42,12 @@ export default function DetailProdukPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
+
     const fetchProduct = async () => {
       try {
         const res = await api.get(`/produk/${id}`);
         const data = res.data;
+
         setProduct(data);
         setCurrentPrice(data.price);
         setCurrentStock(data.stock);
@@ -65,22 +67,25 @@ export default function DetailProdukPage() {
 
     if (selectedColor && selectedSize) {
       const matchedVarian = product.varian.find(
-        v => v.warna === selectedColor && v.ukuran === selectedSize
+        (v) => v.warna === selectedColor && v.ukuran === selectedSize
       );
+
       if (matchedVarian) {
         setCurrentPrice(matchedVarian.harga);
         setCurrentStock(matchedVarian.stok);
       }
     } else if (selectedColor) {
-      const matched = product.varian.filter(v => v.warna === selectedColor);
+      const matched = product.varian.filter((v) => v.warna === selectedColor);
+
       if (matched.length > 0) {
-        setCurrentPrice(Math.min(...matched.map(v => v.harga)));
+        setCurrentPrice(Math.min(...matched.map((v) => v.harga)));
         setCurrentStock(matched.reduce((s, v) => s + v.stok, 0));
       }
     } else if (selectedSize) {
-      const matched = product.varian.filter(v => v.ukuran === selectedSize);
+      const matched = product.varian.filter((v) => v.ukuran === selectedSize);
+
       if (matched.length > 0) {
-        setCurrentPrice(Math.min(...matched.map(v => v.harga)));
+        setCurrentPrice(Math.min(...matched.map((v) => v.harga)));
         setCurrentStock(matched.reduce((s, v) => s + v.stok, 0));
       }
     } else {
@@ -91,49 +96,124 @@ export default function DetailProdukPage() {
 
   // Extract unique warna dan ukuran dari varian
   const uniqueColors = product?.varian
-    ? [...new Set(product.varian.map(v => v.warna).filter(Boolean))]
+    ? [...new Set(product.varian.map((v) => v.warna).filter(Boolean))]
     : [];
 
   const uniqueSizes = product?.varian
-    ? [...new Set(product.varian.map(v => v.ukuran).filter(Boolean))]
+    ? [...new Set(product.varian.map((v) => v.ukuran).filter(Boolean))]
     : [];
 
   // Hitung warna & ukuran yang tersedia berdasarkan pilihan saat ini
   const availableSizes = selectedColor
-    ? new Set(product?.varian?.filter(v => v.warna === selectedColor).map(v => v.ukuran))
+    ? new Set(
+        product?.varian
+          ?.filter((v) => v.warna === selectedColor)
+          .map((v) => v.ukuran)
+      )
     : new Set(uniqueSizes);
 
   const availableColors = selectedSize
-    ? new Set(product?.varian?.filter(v => v.ukuran === selectedSize).map(v => v.warna))
+    ? new Set(
+        product?.varian
+          ?.filter((v) => v.ukuran === selectedSize)
+          .map((v) => v.warna)
+      )
     : new Set(uniqueColors);
 
   // Build image URLs
-  const imageUrls = product?.images?.length > 0
-    ? product.images.map(img => `http://localhost:5000/uploads/${img}`)
-    : ["/kaos.png"];
+  const imageUrls =
+    product?.images?.length > 0
+      ? product.images.map((img) => `http://localhost:5000/uploads/${img}`)
+      : ["/kaos.png"];
+
+  // Cari varian berdasarkan warna dan ukuran yang dipilih
+  const getSelectedVarian = () => {
+    if (!product?.varian || product.varian.length === 0) {
+      return null;
+    }
+
+    return product.varian.find(
+      (v) => v.warna === selectedColor && v.ukuran === selectedSize
+    );
+  };
+
+  // Tambah produk ke keranjang
+  const handleAddToCart = async () => {
+    try {
+      if (!selectedColor || !selectedSize) {
+        alert("Pilih warna dan ukuran terlebih dahulu");
+        return;
+      }
+
+      const selectedVarian = getSelectedVarian();
+
+      if (!selectedVarian) {
+        alert("Varian produk tidak ditemukan");
+        return;
+      }
+
+      if (selectedVarian.stok <= 0) {
+        alert("Stok varian ini habis");
+        return;
+      }
+
+      setAddingCart(true);
+
+      await api.post("/keranjang", {
+        id_varian: selectedVarian.id_varian,
+        qty: 1,
+      });
+
+      alert("Produk berhasil ditambahkan ke keranjang");
+    } catch (error) {
+      console.error("Gagal menambahkan ke keranjang:", error);
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        alert("Silakan login terlebih dahulu");
+        navigate("/auth/login");
+        return;
+      }
+
+      alert("Gagal menambahkan produk ke keranjang");
+    } finally {
+      setAddingCart(false);
+    }
+  };
 
   // Render stars berdasarkan rating
   const renderStars = (rating) => {
-    const fullStars = Math.floor(rating);
+    const fullStars = Math.floor(rating || 0);
     const hasHalf = rating - fullStars >= 0.5;
     const stars = [];
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <Star key={`full-${i}`} size={18} className="fill-yellow-400 text-yellow-400" />
+        <Star
+          key={`full-${i}`}
+          size={18}
+          className="fill-yellow-400 text-yellow-400"
+        />
       );
     }
+
     if (hasHalf) {
       stars.push(
-        <Star key="half" size={18} className="fill-yellow-400/50 text-yellow-400" />
+        <Star
+          key="half"
+          size={18}
+          className="fill-yellow-400/50 text-yellow-400"
+        />
       );
     }
+
     const remaining = 5 - stars.length;
+
     for (let i = 0; i < remaining; i++) {
       stars.push(
         <Star key={`empty-${i}`} size={18} className="text-yellow-400" />
       );
     }
+
     return stars;
   };
 
@@ -184,7 +264,9 @@ export default function DetailProdukPage() {
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={`flex h-32 items-center justify-center rounded-xl bg-[#dedede] cursor-pointer transition ${
-                      selectedImage === index ? "ring-2 ring-black" : "hover:opacity-80"
+                      selectedImage === index
+                        ? "ring-2 ring-black"
+                        : "hover:opacity-80"
                     }`}
                   >
                     <img
@@ -214,19 +296,23 @@ export default function DetailProdukPage() {
               </div>
 
               <span className="text-sm">{product.avg_rating || "-"}</span>
-              <span className="text-sm text-gray-500">{product.total_ulasan} Ulasan</span>
+              <span className="text-sm text-gray-500">
+                {product.total_ulasan} Ulasan
+              </span>
             </div>
 
             <div className="mt-3 flex items-end gap-4">
               <h2 className="text-4xl font-bold font-serif">
-                Rp. {currentPrice?.toLocaleString('id-ID')}
+                Rp. {currentPrice?.toLocaleString("id-ID")}
               </h2>
             </div>
 
             {/* Deskripsi */}
             {product.description && (
               <div className="mt-4">
-                <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {product.description}
+                </p>
               </div>
             )}
 
@@ -234,12 +320,16 @@ export default function DetailProdukPage() {
             {uniqueColors.length > 0 && (
               <div className="mt-5">
                 <p className="text-sm">
-                  Warna {selectedColor && <span className="text-gray-500">— {selectedColor}</span>}
+                  Warna{" "}
+                  {selectedColor && (
+                    <span className="text-gray-500">— {selectedColor}</span>
+                  )}
                 </p>
 
                 <div className="mt-2 flex gap-4">
                   {uniqueColors.map((color) => {
                     const isAvailable = availableColors.has(color);
+
                     return (
                       <button
                         key={color}
@@ -254,10 +344,13 @@ export default function DetailProdukPage() {
                           selectedColor === color
                             ? "scale-125 ring-2 ring-black ring-offset-2"
                             : isAvailable
-                              ? "hover:scale-110"
-                              : "opacity-25 cursor-not-allowed"
+                            ? "hover:scale-110"
+                            : "opacity-25 cursor-not-allowed"
                         }`}
-                        style={{ backgroundColor: colorMap[color] || colorMap["Default"] }}
+                        style={{
+                          backgroundColor:
+                            colorMap[color] || colorMap["Default"],
+                        }}
                       ></button>
                     );
                   })}
@@ -273,6 +366,7 @@ export default function DetailProdukPage() {
                 <div className="mt-3 flex gap-5">
                   {uniqueSizes.map((size) => {
                     const isAvailable = availableSizes.has(size);
+
                     return (
                       <button
                         key={size}
@@ -285,8 +379,8 @@ export default function DetailProdukPage() {
                           selectedSize === size
                             ? "bg-black text-white shadow-lg -translate-y-1"
                             : isAvailable
-                              ? "hover:bg-black hover:text-white hover:-translate-y-1 hover:shadow-xl cursor-pointer"
-                              : "opacity-25 cursor-not-allowed border-gray-400 text-gray-400"
+                            ? "hover:bg-black hover:text-white hover:-translate-y-1 hover:shadow-xl cursor-pointer"
+                            : "opacity-25 cursor-not-allowed border-gray-400 text-gray-400"
                         }`}
                       >
                         {size}
@@ -298,15 +392,19 @@ export default function DetailProdukPage() {
             )}
 
             <div className="mt-8 flex items-center gap-4">
-            <button
-              onClick={() => navigate("/checkout")}
-              disabled={currentStock === 0}
-              className="w-[340px] rounded-xl bg-black py-3 text-xl font-serif font-bold text-white hover:bg-[#b89578] transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Checkout
-            </button> 
+              <button
+                onClick={() => navigate("/checkout")}
+                disabled={currentStock === 0}
+                className="w-[340px] rounded-xl bg-black py-3 text-xl font-serif font-bold text-white hover:bg-[#b89578] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Checkout
+              </button>
 
-              <button className="flex h-12 w-20 items-center justify-center rounded-xl bg-[#e7e1d9] hover:bg-[#d5c7ba] transition">
+              <button
+                onClick={handleAddToCart}
+                disabled={currentStock === 0 || addingCart}
+                className="flex h-12 w-20 items-center justify-center rounded-xl bg-[#e7e1d9] hover:bg-[#d5c7ba] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <ShoppingCart size={28} />
               </button>
             </div>
