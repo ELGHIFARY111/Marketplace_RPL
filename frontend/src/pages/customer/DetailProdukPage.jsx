@@ -5,7 +5,6 @@ import Footer from "../components/Footer";
 import api from "../../services/api";
 import { ShoppingCart, Star } from "lucide-react";
 
-// Map nama warna Indonesia ke hex color
 const colorMap = {
   Hitam: "#000000",
   Putih: "#FFFFFF",
@@ -35,10 +34,11 @@ export default function DetailProdukPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [addingCart, setAddingCart] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
-  // Harga yang berubah sesuai varian terpilih
   const [currentPrice, setCurrentPrice] = useState(0);
   const [currentStock, setCurrentStock] = useState(0);
+  const [currentWeight, setCurrentWeight] = useState(1000);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,8 +49,12 @@ export default function DetailProdukPage() {
         const data = res.data;
 
         setProduct(data);
-        setCurrentPrice(data.price);
-        setCurrentStock(data.stock);
+        setCurrentPrice(data.price || 0);
+        setCurrentStock(data.stock || 0);
+
+        if (data.varian?.length > 0) {
+          setCurrentWeight(data.varian[0].berat_gram || 1000);
+        }
       } catch (err) {
         console.log("Error fetch produk:", err);
       } finally {
@@ -61,7 +65,6 @@ export default function DetailProdukPage() {
     fetchProduct();
   }, [id]);
 
-  // Update harga & stok ketika user pilih warna + ukuran
   useEffect(() => {
     if (!product || !product.varian) return;
 
@@ -73,28 +76,34 @@ export default function DetailProdukPage() {
       if (matchedVarian) {
         setCurrentPrice(matchedVarian.harga);
         setCurrentStock(matchedVarian.stok);
+        setCurrentWeight(matchedVarian.berat_gram || 1000);
       }
     } else if (selectedColor) {
       const matched = product.varian.filter((v) => v.warna === selectedColor);
 
       if (matched.length > 0) {
         setCurrentPrice(Math.min(...matched.map((v) => v.harga)));
-        setCurrentStock(matched.reduce((s, v) => s + v.stok, 0));
+        setCurrentStock(matched.reduce((s, v) => s + Number(v.stok || 0), 0));
+        setCurrentWeight(matched[0].berat_gram || 1000);
       }
     } else if (selectedSize) {
       const matched = product.varian.filter((v) => v.ukuran === selectedSize);
 
       if (matched.length > 0) {
         setCurrentPrice(Math.min(...matched.map((v) => v.harga)));
-        setCurrentStock(matched.reduce((s, v) => s + v.stok, 0));
+        setCurrentStock(matched.reduce((s, v) => s + Number(v.stok || 0), 0));
+        setCurrentWeight(matched[0].berat_gram || 1000);
       }
     } else {
-      setCurrentPrice(product.price);
-      setCurrentStock(product.stock);
+      setCurrentPrice(product.price || 0);
+      setCurrentStock(product.stock || 0);
+
+      if (product.varian?.length > 0) {
+        setCurrentWeight(product.varian[0].berat_gram || 1000);
+      }
     }
   }, [selectedColor, selectedSize, product]);
 
-  // Extract unique warna dan ukuran dari varian
   const uniqueColors = product?.varian
     ? [...new Set(product.varian.map((v) => v.warna).filter(Boolean))]
     : [];
@@ -103,7 +112,6 @@ export default function DetailProdukPage() {
     ? [...new Set(product.varian.map((v) => v.ukuran).filter(Boolean))]
     : [];
 
-  // Hitung warna & ukuran yang tersedia berdasarkan pilihan saat ini
   const availableSizes = selectedColor
     ? new Set(
         product?.varian
@@ -120,13 +128,11 @@ export default function DetailProdukPage() {
       )
     : new Set(uniqueColors);
 
-  // Build image URLs
   const imageUrls =
     product?.images?.length > 0
       ? product.images.map((img) => `http://localhost:5000/uploads/${img}`)
       : ["/kaos.png"];
 
-  // Cari varian berdasarkan warna dan ukuran yang dipilih
   const getSelectedVarian = () => {
     if (!product?.varian || product.varian.length === 0) {
       return null;
@@ -137,34 +143,51 @@ export default function DetailProdukPage() {
     );
   };
 
-  // Tambah produk ke keranjang
+  const validateSelectedVarian = () => {
+    if (!selectedColor || !selectedSize) {
+      alert("Pilih warna dan ukuran terlebih dahulu");
+      return null;
+    }
+
+    const selectedVarian = getSelectedVarian();
+
+    if (!selectedVarian) {
+      alert("Varian produk tidak ditemukan");
+      return null;
+    }
+
+    if (selectedVarian.stok <= 0) {
+      alert("Stok varian ini habis");
+      return null;
+    }
+
+    return selectedVarian;
+  };
+
+  const addSelectedVarianToCart = async () => {
+    const selectedVarian = validateSelectedVarian();
+
+    if (!selectedVarian) {
+      return false;
+    }
+
+    await api.post("/keranjang", {
+      id_varian: selectedVarian.id_varian,
+      qty: 1,
+    });
+
+    return true;
+  };
+
   const handleAddToCart = async () => {
     try {
-      if (!selectedColor || !selectedSize) {
-        alert("Pilih warna dan ukuran terlebih dahulu");
-        return;
-      }
-
-      const selectedVarian = getSelectedVarian();
-
-      if (!selectedVarian) {
-        alert("Varian produk tidak ditemukan");
-        return;
-      }
-
-      if (selectedVarian.stok <= 0) {
-        alert("Stok varian ini habis");
-        return;
-      }
-
       setAddingCart(true);
 
-      await api.post("/keranjang", {
-        id_varian: selectedVarian.id_varian,
-        qty: 1,
-      });
+      const success = await addSelectedVarianToCart();
 
-      alert("Produk berhasil ditambahkan ke keranjang");
+      if (success) {
+        alert("Produk berhasil ditambahkan ke keranjang");
+      }
     } catch (error) {
       console.error("Gagal menambahkan ke keranjang:", error);
 
@@ -174,13 +197,36 @@ export default function DetailProdukPage() {
         return;
       }
 
-      alert("Gagal menambahkan produk ke keranjang");
+      alert(error.response?.data?.message || "Gagal menambahkan produk ke keranjang");
     } finally {
       setAddingCart(false);
     }
   };
 
-  // Render stars berdasarkan rating
+  const handleCheckoutNow = async () => {
+    try {
+      setCheckoutLoading(true);
+
+      const success = await addSelectedVarianToCart();
+
+      if (success) {
+        navigate("/checkout");
+      }
+    } catch (error) {
+      console.error("Gagal checkout:", error);
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        alert("Silakan login terlebih dahulu");
+        navigate("/auth/login");
+        return;
+      }
+
+      alert(error.response?.data?.message || "Gagal memproses checkout");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating || 0);
     const hasHalf = rating - fullStars >= 0.5;
@@ -247,7 +293,6 @@ export default function DetailProdukPage() {
 
       <main className="px-20 py-14 flex-1">
         <div className="grid grid-cols-2 gap-16">
-          {/* LEFT IMAGE */}
           <section>
             <div className="flex h-[480px] items-center justify-center rounded-3xl bg-[#dedede]">
               <img
@@ -280,7 +325,6 @@ export default function DetailProdukPage() {
             )}
           </section>
 
-          {/* RIGHT DETAIL */}
           <section className="pt-14">
             <h1 className="text-5xl font-serif leading-tight">
               {product.name}
@@ -288,6 +332,10 @@ export default function DetailProdukPage() {
 
             <p className="text-sm text-gray-500">
               {currentStock > 0 ? `Stok: ${currentStock}` : "Stok Habis"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Berat: {currentWeight} gram
             </p>
 
             <div className="mt-2 flex items-center gap-2">
@@ -303,11 +351,10 @@ export default function DetailProdukPage() {
 
             <div className="mt-3 flex items-end gap-4">
               <h2 className="text-4xl font-bold font-serif">
-                Rp. {currentPrice?.toLocaleString("id-ID")}
+                Rp. {Number(currentPrice || 0).toLocaleString("id-ID")}
               </h2>
             </div>
 
-            {/* Deskripsi */}
             {product.description && (
               <div className="mt-4">
                 <p className="text-sm text-gray-600 leading-relaxed">
@@ -316,7 +363,6 @@ export default function DetailProdukPage() {
               </div>
             )}
 
-            {/* WARNA */}
             {uniqueColors.length > 0 && (
               <div className="mt-5">
                 <p className="text-sm">
@@ -351,14 +397,13 @@ export default function DetailProdukPage() {
                           backgroundColor:
                             colorMap[color] || colorMap["Default"],
                         }}
-                      ></button>
+                      />
                     );
                   })}
                 </div>
               </div>
             )}
 
-            {/* UKURAN */}
             {uniqueSizes.length > 0 && (
               <div className="mt-6">
                 <p className="text-sm">Ukuran</p>
@@ -393,11 +438,11 @@ export default function DetailProdukPage() {
 
             <div className="mt-8 flex items-center gap-4">
               <button
-                onClick={() => navigate("/checkout")}
-                disabled={currentStock === 0}
+                onClick={handleCheckoutNow}
+                disabled={currentStock === 0 || checkoutLoading}
                 className="w-[340px] rounded-xl bg-black py-3 text-xl font-serif font-bold text-white hover:bg-[#b89578] transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Checkout
+                {checkoutLoading ? "Memproses..." : "Checkout"}
               </button>
 
               <button

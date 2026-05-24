@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ShoppingCart } from "lucide-react";
 import api from "../../services/api";
 
 export default function KeranjangPage() {
+  const navigate = useNavigate();
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +21,14 @@ export default function KeranjangPage() {
 
       console.log("DATA KERANJANG:", res.data);
 
-      setItems(Array.isArray(res.data) ? res.data : []);
+      const dataKeranjang =
+        res.data?.data ||
+        res.data?.items ||
+        res.data?.keranjang ||
+        res.data?.cart ||
+        res.data;
+
+      setItems(Array.isArray(dataKeranjang) ? dataKeranjang : []);
     } catch (error) {
       console.error("Gagal memuat keranjang:", error);
       setItems([]);
@@ -42,23 +52,28 @@ export default function KeranjangPage() {
       setItems((prevItems) =>
         prevItems.map((item) =>
           item.id_keranjang === idKeranjang
-            ? { ...item, qty: newQty }
+            ? {
+                ...item,
+                qty: newQty,
+                subtotal: Number(item.harga || 0) * newQty,
+                total_berat: Number(item.berat_gram || 1000) * newQty,
+              }
             : item
         )
       );
     } catch (error) {
       console.error("Gagal update qty:", error);
-      alert("Gagal mengubah jumlah produk");
+      alert(error.response?.data?.message || "Gagal mengubah jumlah produk");
     }
   };
 
   const increaseQty = (item) => {
-    updateQty(item.id_keranjang, item.qty + 1);
+    updateQty(item.id_keranjang, Number(item.qty || 1) + 1);
   };
 
   const decreaseQty = (item) => {
-    if (item.qty > 1) {
-      updateQty(item.id_keranjang, item.qty - 1);
+    if (Number(item.qty || 1) > 1) {
+      updateQty(item.id_keranjang, Number(item.qty || 1) - 1);
     }
   };
 
@@ -71,7 +86,7 @@ export default function KeranjangPage() {
       );
     } catch (error) {
       console.error("Gagal menghapus item:", error);
-      alert("Gagal menghapus produk dari keranjang");
+      alert(error.response?.data?.message || "Gagal menghapus produk dari keranjang");
     }
   };
 
@@ -80,9 +95,19 @@ export default function KeranjangPage() {
     0
   );
 
-  const shipping = items.length > 0 ? 14000 : 0;
-  const tax = items.length > 0 ? 7000 : 0;
-  const total = subtotal + shipping + tax;
+  const totalBarang = items.reduce(
+    (total, item) => total + Number(item.qty || 0),
+    0
+  );
+
+  const totalBerat = items.reduce(
+    (total, item) =>
+      total + Number(item.berat_gram || 1000) * Number(item.qty || 0),
+    0
+  );
+
+  const tax = items.length > 0 ? Math.round(subtotal * 0.02) : 0;
+  const total = subtotal + tax;
 
   if (loading) {
     return (
@@ -139,6 +164,10 @@ export default function KeranjangPage() {
                       Warna: {item.warna || "-"} | Ukuran: {item.ukuran || "-"}
                     </p>
 
+                    <p className="text-xs text-gray-500">
+                      Berat: {item.berat_gram || 1000} gram
+                    </p>
+
                     <div className="mt-4 flex items-center gap-2">
                       <p className="text-xl font-bold font-serif">
                         {formatRupiah(item.harga)}
@@ -167,7 +196,9 @@ export default function KeranjangPage() {
                   </div>
 
                   <div className="flex flex-col items-center justify-between py-2">
-                    <input type="checkbox" className="h-3 w-3" />
+                    <p className="text-[10px] text-gray-500">
+                      {formatRupiah(Number(item.harga || 0) * Number(item.qty || 0))}
+                    </p>
 
                     <button
                       onClick={() => removeItem(item.id_keranjang)}
@@ -193,13 +224,13 @@ export default function KeranjangPage() {
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Subtotal ({items.length} barang)</span>
+                  <span>Subtotal ({totalBarang} barang)</span>
                   <span>{formatRupiah(subtotal)}</span>
                 </div>
 
                 <div className="flex justify-between">
-                  <span>Biaya pengiriman</span>
-                  <span>{formatRupiah(shipping)}</span>
+                  <span>Total Berat</span>
+                  <span>{totalBerat} gram</span>
                 </div>
 
                 <div className="flex justify-between">
@@ -208,13 +239,14 @@ export default function KeranjangPage() {
                 </div>
 
                 <div className="flex justify-between pt-6">
-                  <span>Total Pembayaran</span>
+                  <span>Total Sementara</span>
                   <span>{formatRupiah(total)}</span>
                 </div>
               </div>
 
               <button
                 disabled={items.length === 0}
+                onClick={() => navigate("/checkout")}
                 className="mt-14 w-full rounded-md bg-black py-3 text-white hover:bg-[#b89578] transition disabled:opacity-50"
               >
                 BAYAR

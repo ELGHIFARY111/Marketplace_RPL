@@ -14,12 +14,14 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
+app.use('/api/users/alamat', require('./routes/alamat.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/produk', require('./routes/produk.routes'));
 app.use('/api/varian', require('./routes/varian.routes'));
 app.use('/api/categories', require('./routes/kategori.routes'));
 app.use('/api/keranjang', require('./routes/keranjang.routes'));
 app.use('/api/pesanan', require('./routes/pesanan.routes'));
+app.use("/api/pembayaran", require("./routes/pembayaran.routes"));
 app.use('/api/ulasan', require('./routes/ulasan.routes'));
 app.use('/api/promo', require('./routes/promosi.routes'));
 app.use('/api/voucher', require('./routes/voucher.routes'));
