@@ -379,10 +379,10 @@ export default function CheckoutPage() {
 
         alamat: selectedAlamat,
         pengiriman: {
-          kurir_code: selectedShipping.code,
+          kurir_code: selectedShipping.code || selectedCourier,
           kurir_service: selectedShipping.service,
-          kurir_name: selectedShipping.name,
-          ongkir: Number(selectedShipping.cost),
+          kurir_name: selectedShipping.name || selectedCourier?.toUpperCase(),
+          ongkir: Number(selectedShipping.cost || 0),
           etd: selectedShipping.etd,
         },
 

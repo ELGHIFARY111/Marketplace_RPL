@@ -161,5 +161,6 @@ Sudah ada:
 - Frontend akan running di port 3000, backend di port 5000
 
 ---
-
-**Happy Coding! 🚀**
+## akun
+admin1@gmail.com
+123

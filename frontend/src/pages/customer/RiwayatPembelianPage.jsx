@@ -57,9 +57,9 @@ export default function RiwayatPembelianPage() {
     return "bg-yellow-100 text-yellow-700";
   };
 
-  const fetchRiwayatPesanan = async () => {
+  const fetchRiwayatPesanan = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
 
       const res = await api.get("/pesanan/riwayat");
 
@@ -73,15 +73,23 @@ export default function RiwayatPembelianPage() {
       setOrders(Array.isArray(dataPesanan) ? dataPesanan : []);
     } catch (error) {
       console.error("Gagal memuat riwayat pesanan:", error.response?.data || error);
-      alert(error.response?.data?.message || "Gagal memuat riwayat pesanan");
+      if (showLoading) {
+        alert(error.response?.data?.message || "Gagal memuat riwayat pesanan");
+      }
       setOrders([]);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRiwayatPesanan();
+    fetchRiwayatPesanan(true);
+
+    const interval = setInterval(() => {
+      fetchRiwayatPesanan(false);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleDetail = async (order) => {
@@ -155,9 +163,10 @@ export default function RiwayatPembelianPage() {
                       `PESANAN-${order.id_pesanan}`;
 
                     const status =
-                      order.status_bayar ||
-                      order.status_pesanan ||
-                      "pending_payment";
+                      ["diproses", "dikirim", "selesai", "dibatalkan"].includes(order.status_pesanan)
+                        ? order.status_pesanan
+                        : (order.status_bayar || order.status_pesanan || "pending_payment");
+
 
                     return (
                       <tr

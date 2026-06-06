@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { cloudinary } = require('../middleware/upload.middleware');
 
 const getAllProducts = async (req, res) => {
   try {
@@ -96,9 +97,10 @@ const createProduct = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
       const fotoQueries = req.files.map(file => {
+        // file.path = URL Cloudinary, file.filename = public_id
         return connection.query(
           'INSERT INTO foto_produk (id_produk, file_foto) VALUES (?, ?)',
-          [newProductId, file.filename]
+          [newProductId, file.path]
         );
       });
       await Promise.all(fotoQueries);
@@ -138,13 +140,26 @@ const updateProduct = async (req, res) => {
 
     if (photosToDelete.length > 0) {
       await connection.query('DELETE FROM foto_produk WHERE id_produk = ? AND file_foto IN (?)', [id, photosToDelete]);
+      // Hapus dari Cloudinary juga
+      for (const url of photosToDelete) {
+        try {
+          // Ambil public_id dari URL Cloudinary
+          const parts = url.split('/');
+          const filenameWithExt = parts[parts.length - 1];
+          const folder = parts[parts.length - 2];
+          const publicId = `${folder}/${filenameWithExt.split('.')[0]}`;
+          await cloudinary.uploader.destroy(publicId);
+        } catch (e) {
+          console.warn('Gagal hapus dari Cloudinary:', e.message);
+        }
+      }
     }
 
     if (req.files && req.files.length > 0) {
       const fotoQueries = req.files.map(file => {
         return connection.query(
           'INSERT INTO foto_produk (id_produk, file_foto) VALUES (?, ?)',
-          [id, file.filename]
+          [id, file.path]  // simpan URL Cloudinary
         );
       });
       await Promise.all(fotoQueries);

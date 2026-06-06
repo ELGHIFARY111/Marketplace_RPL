@@ -54,7 +54,15 @@ npm run dev
 Frontend akan running di `http://localhost:3000`
 
 ---
+```bash
+# Backend
+cd backend && npm install
+cd ..
+# Frontend
+cd frontend && npm install
 
+
+```
 ## 3️⃣ Implementasi Checklist
 
 ### Backend

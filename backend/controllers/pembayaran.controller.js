@@ -125,6 +125,15 @@ const createCorePayment = async (req, res) => {
       });
     }
 
+    let id_kurir = null;
+    if (kurir_code) {
+      const lowerCode = kurir_code.toLowerCase();
+      if (lowerCode === "jne") id_kurir = 1;
+      else if (lowerCode === "jnt") id_kurir = 2;
+      else if (lowerCode === "sicepat") id_kurir = 3;
+      else if (lowerCode === "anteraja") id_kurir = 4;
+    }
+
     await connection.beginTransaction();
 
     const [pesananResult] = await connection.query(
@@ -134,13 +143,14 @@ const createCorePayment = async (req, res) => {
       [
         id_user,
         id_alamat,
-        null,
+        id_kurir,
         null,
         grossAmount,
         "pending_payment",
         null,
       ]
     );
+
 
     const id_pesanan = pesananResult.insertId;
     const order_id = `PESANAN-${id_pesanan}-${Date.now()}`;
@@ -385,12 +395,21 @@ const midtransNotification = async (req, res) => {
       notification
     );
 
-    await pool.query(
-      `UPDATE pesanan 
-       SET status_pesanan = ?
-       WHERE id_pesanan = ?`,
-      [statusPesanan, id_pesanan]
+    const [pesananRowForNotif] = await pool.query(
+      "SELECT status_pesanan FROM pesanan WHERE id_pesanan = ? LIMIT 1",
+      [id_pesanan]
     );
+    const existingStatusForNotif = pesananRowForNotif[0]?.status_pesanan;
+    const advancedStatuses = ["diproses", "dikirim", "selesai", "dibatalkan"];
+
+    if (!advancedStatuses.includes(existingStatusForNotif)) {
+      await pool.query(
+        `UPDATE pesanan 
+         SET status_pesanan = ?
+         WHERE id_pesanan = ?`,
+        [statusPesanan, id_pesanan]
+      );
+    }
 
     await pool.query(
       `UPDATE pembayaran
@@ -513,10 +532,20 @@ const getStatusPayment = async (req, res) => {
       statusResponse
     );
 
-    await pool.query(
-      "UPDATE pesanan SET status_pesanan = ? WHERE id_pesanan = ?",
-      [statusPesanan, id_pesanan]
+    const [pesananRowForStatus] = await pool.query(
+      "SELECT status_pesanan FROM pesanan WHERE id_pesanan = ? LIMIT 1",
+      [id_pesanan]
     );
+    const existingStatusForStatus = pesananRowForStatus[0]?.status_pesanan;
+
+    if (!advancedStatuses.includes(existingStatusForStatus)) {
+      await pool.query(
+        "UPDATE pesanan SET status_pesanan = ? WHERE id_pesanan = ?",
+        [statusPesanan, id_pesanan]
+      );
+    } else {
+      statusPesanan = existingStatusForStatus;
+    }
 
     await pool.query(
       `

@@ -1,5 +1,94 @@
 const db = require("../config/db");
 
+
+
+const getAllPesananAdmin = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        p.id_pesanan,
+        u.nama_lengkap AS nama_customer,
+        p.tgl_pesan,
+        p.total_tagihan,
+        p.status_pesanan,
+        pb.metode_bayar,
+        pb.status_bayar
+      FROM pesanan p
+      LEFT JOIN users u ON p.id_user = u.id_user
+      LEFT JOIN pembayaran pb ON p.id_pesanan = pb.id_pesanan
+      ORDER BY p.id_pesanan DESC
+    `);
+    res.json({ data: rows });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal mengambil pesanan", error: error.message });
+  }
+};
+
+const getDetailPesananAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [pesananRows] = await db.query(`
+      SELECT p.*, u.nama_lengkap AS nama_customer,
+        pb.metode_bayar, pb.status_bayar,
+        a.label_alamat, a.nama_penerima, a.no_telp_penerima,
+        a.provinsi, a.kabupaten_kota, a.kecamatan, a.desa, a.kode_pos
+      FROM pesanan p
+      LEFT JOIN users u ON p.id_user = u.id_user
+      LEFT JOIN pembayaran pb ON p.id_pesanan = pb.id_pesanan
+      LEFT JOIN alamat_pengiriman a ON p.id_alamat = a.id_alamat
+      WHERE p.id_pesanan = ? LIMIT 1
+    `, [id]);
+
+    if (pesananRows.length === 0)
+      return res.status(404).json({ message: "Pesanan tidak ditemukan" });
+
+    const [items] = await db.query(`
+      SELECT dp.*, vp.sku, vp.warna, vp.ukuran, pr.nama_produk
+      FROM detail_pesanan dp
+      LEFT JOIN varian_produk vp ON dp.id_varian = vp.id_varian
+      LEFT JOIN produk pr ON vp.id_produk = pr.id_produk
+      WHERE dp.id_pesanan = ?
+    `, [id]);
+
+    res.json({ data: { ...pesananRows[0], items } });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal mengambil detail pesanan", error: error.message });
+  }
+};
+
+const updateStatusPesananAdmin = async (req, res) => {
+  try {
+    const { ids, status, no_resi } = req.body;
+    if (!ids || !ids.length) return res.status(400).json({ message: "IDs wajib diisi" });
+
+    if (status === "hapus") {
+      // Hapus semua data terkait
+      for (const id of ids) {
+        await db.query("DELETE FROM pembayaran WHERE id_pesanan = ?", [id]);
+        await db.query("DELETE FROM detail_pesanan WHERE id_pesanan = ?", [id]);
+        await db.query("DELETE FROM pesanan WHERE id_pesanan = ?", [id]);
+      }
+      return res.json({ message: `${ids.length} pesanan berhasil dihapus` });
+    }
+
+    for (const id of ids) {
+      if (status === "dikirim" && no_resi) {
+        await db.query(
+          "UPDATE pesanan SET status_pesanan = ?, no_resi = ? WHERE id_pesanan = ?",
+          [status, no_resi, id]
+        );
+      } else {
+        await db.query("UPDATE pesanan SET status_pesanan = ? WHERE id_pesanan = ?", [status, id]);
+      }
+    }
+    res.json({ message: `Status ${ids.length} pesanan diperbarui ke '${status}'` });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal update status", error: error.message });
+  }
+};
+
+
+// customer side
 const getUserId = (req) => {
   return req.user?.id || req.user?.id_user || req.user?.userId;
 };
@@ -351,6 +440,9 @@ const getDetailPesanan = async (req, res) => {
 };
 
 module.exports = {
+  getAllPesananAdmin,
+  getDetailPesananAdmin,
+  updateStatusPesananAdmin,
   getRiwayatPesanan,
   getDetailPesanan,
 };

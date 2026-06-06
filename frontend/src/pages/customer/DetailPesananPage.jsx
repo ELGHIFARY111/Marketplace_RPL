@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import {
@@ -16,7 +16,7 @@ export default function DetailPesananPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const paymentData = useMemo(() => {
+  const initialPaymentData = useMemo(() => {
     if (location.state) {
       return location.state;
     }
@@ -34,7 +34,66 @@ export default function DetailPesananPage() {
     return null;
   }, [location.state]);
 
+  const [paymentData, setPaymentData] = useState(initialPaymentData);
+  const [pollingActive, setPollingActive] = useState(true);
+  const pollingRef = useRef(null);
+  // Ref to always have fresh paymentData inside callbacks (fix stale closure)
+  const paymentDataRef = useRef(initialPaymentData);
+  useEffect(() => { paymentDataRef.current = paymentData; }, [paymentData]);
+
   const midtrans = paymentData?.midtrans;
+
+  const FINAL_STATUSES = ["settlement", "capture", "deny", "cancel", "expire"];
+
+  const checkStatus = useCallback(async () => {
+    const current = paymentDataRef.current;
+    if (!current?.order_id) return;
+
+    try {
+      const res = await api.get(`/pembayaran/status/${current.order_id}`);
+
+      const updatedData = {
+        ...current,
+        midtrans: {
+          ...current.midtrans,
+          ...res.data.midtrans,
+        },
+        status_bayar: res.data.statusBayar,
+        status_pesanan: res.data.statusPesanan,
+      };
+
+      localStorage.setItem("lastPaymentData", JSON.stringify(updatedData));
+      setPaymentData(updatedData);
+
+      const isPaymentFinal = FINAL_STATUSES.includes(res.data.statusBayar);
+      const isOrderFinal = ["selesai", "dibatalkan"].includes(res.data.statusPesanan);
+
+      if (isPaymentFinal && isOrderFinal) {
+        setPollingActive(false);
+      }
+    } catch (error) {
+      console.error("Auto-polling gagal:", error.response?.data || error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const currentStatus = midtrans?.transaction_status;
+    const currentOrderStatus = paymentData?.status_pesanan;
+    const isPaymentFinal = FINAL_STATUSES.includes(currentStatus) || FINAL_STATUSES.includes(paymentData?.status_bayar);
+    const isOrderFinal = ["selesai", "dibatalkan"].includes(currentOrderStatus);
+
+    if (!pollingActive || (isPaymentFinal && isOrderFinal)) {
+      setPollingActive(false);
+      return;
+    }
+
+    pollingRef.current = setInterval(() => {
+      checkStatus();
+    }, 5000);
+
+    return () => clearInterval(pollingRef.current);
+  }, [pollingActive, checkStatus, midtrans?.transaction_status, paymentData?.status_bayar, paymentData?.status_pesanan]);
+
 
   const formatRupiah = (angka) => {
     return `Rp.${Number(angka || 0).toLocaleString("id-ID")},00`;
@@ -125,25 +184,7 @@ export default function DetailPesananPage() {
     }
   };
   const refreshStatus = async () => {
-    try {
-      const res = await api.get(`/pembayaran/status/${paymentData.order_id}`);
-
-      const updatedData = {
-        ...paymentData,
-        midtrans: {
-          ...paymentData.midtrans,
-          ...res.data.midtrans,
-        },
-        status_bayar: res.data.statusBayar,
-        status_pesanan: res.data.statusPesanan,
-      };
-
-      localStorage.setItem("lastPaymentData", JSON.stringify(updatedData));
-      window.location.reload();
-    } catch (error) {
-      console.error("Gagal refresh status:", error.response?.data || error);
-      alert(error.response?.data?.message || "Gagal refresh status pembayaran");
-    }
+    await checkStatus();
   };
 
   if (!paymentData) {
@@ -209,9 +250,29 @@ export default function DetailPesananPage() {
                 <p>
                   Status:{" "}
                   <span className="font-bold">
-                    {midtrans?.transaction_status || "pending"}
+                    {(() => {
+                      const st = ["diproses", "dikirim", "selesai", "dibatalkan"].includes(paymentData.status_pesanan)
+                        ? paymentData.status_pesanan
+                        : (paymentData.status_bayar || midtrans?.transaction_status);
+                      const statusMap = {
+                        pending_payment: "Menunggu Bayar",
+                        pending: "Menunggu Bayar",
+                        dibayar: "Dibayar",
+                        settlement: "Dibayar",
+                        capture: "Dibayar",
+                        diproses: "Diproses",
+                        dikirim: "Dikirim",
+                        selesai: "Selesai",
+                        gagal: "Gagal",
+                        expire: "Kedaluwarsa",
+                        cancel: "Dibatalkan",
+                        deny: "Ditolak",
+                      };
+                      return statusMap[st] || st || "pending";
+                    })()}
                   </span>
                 </p>
+
 
                 <p>
                   Metode Pembayaran:{" "}
@@ -272,12 +333,44 @@ export default function DetailPesananPage() {
               <div className="font-serif">
                 <h3 className="mb-2 font-bold">Pengiriman</h3>
 
-                <p>
-                  {paymentData.pengiriman?.kurir_name || "-"} -{" "}
-                  {paymentData.pengiriman?.kurir_service || "-"}
-                </p>
+                {(() => {
+                  // fallback: parse from midtrans custom_field2 = "kurir_code-kurir_service"
+                  const cf2 = paymentData.midtrans?.custom_field2 || "";
+                  const cf3 = paymentData.midtrans?.custom_field3 || "";
+                  const [cfCode, cfService] = cf2.split("-");
+                  const cfEtd = cf3.replace("Estimasi ", "");
 
-                <p>Estimasi: {paymentData.pengiriman?.etd || "-"}</p>
+                  const kurirName =
+                    paymentData.pengiriman?.kurir_name ||
+                    paymentData.pengiriman?.kurir_code ||
+                    cfCode?.toUpperCase() ||
+                    "-";
+
+                  const kurirService =
+                    paymentData.pengiriman?.kurir_service ||
+                    cfService?.toUpperCase() ||
+                    "-";
+
+                  const etd =
+                    paymentData.pengiriman?.etd || cfEtd || "-";
+
+                  const ongkir =
+                    paymentData.pengiriman?.ongkir ||
+                    paymentData.ongkir ||
+                    0;
+
+                  return (
+                    <>
+                      <p>
+                        {kurirName} - {kurirService}
+                      </p>
+                      <p>Estimasi: {etd}</p>
+                      {ongkir > 0 && (
+                        <p>Ongkir: {formatRupiah(ongkir)}</p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </section>
 
@@ -390,15 +483,35 @@ export default function DetailPesananPage() {
               )}
 
               <div className="mt-5 rounded-md bg-[#f3efe9] px-4 py-3 font-serif text-sm">
-                <p>
-                  Status Pembayaran:{" "}
-                  <span className="font-bold">
-                    {midtrans?.transaction_status || "pending"}
-                  </span>
-                </p>
+                <div className="flex items-center justify-between">
+                  <p>
+                    Status Pembayaran:{" "}
+                    <span
+                      className={`font-bold ${
+                        midtrans?.transaction_status === "settlement" ||
+                        midtrans?.transaction_status === "capture"
+                          ? "text-green-600"
+                          : midtrans?.transaction_status === "deny" ||
+                            midtrans?.transaction_status === "cancel" ||
+                            midtrans?.transaction_status === "expire"
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
+                      {midtrans?.transaction_status || "pending"}
+                    </span>
+                  </p>
+
+                  {pollingActive && (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-green-400" />
+                      Memantau otomatis...
+                    </span>
+                  )}
+                </div>
 
                 {midtrans?.expiry_time && (
-                  <p>
+                  <p className="mt-1">
                     Batas Pembayaran:{" "}
                     <span className="font-bold">{midtrans.expiry_time}</span>
                   </p>
@@ -415,9 +528,9 @@ export default function DetailPesananPage() {
               <button
                 type="button"
                 onClick={refreshStatus}
-                className="mt-4 w-full rounded-md bg-black py-3 font-serif text-white hover:bg-[#b89578] transition"
+                className="mt-4 w-full rounded-md border border-black bg-transparent py-3 font-serif text-black hover:bg-black hover:text-white transition"
               >
-                Refresh Status Pembayaran
+                Refresh Manual
               </button>
             </section>
           </div>
