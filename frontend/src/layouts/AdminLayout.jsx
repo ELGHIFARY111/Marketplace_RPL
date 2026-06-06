@@ -11,17 +11,57 @@ import {
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#f3efe9] ">
 
       {/* Navbar */}
       <header className="flex items-center justify-between px-8 py-4 bg-[#f3efe9]">
-        <h1 className="text-2xl font-bold">Zenvy</h1>
+        <h1 
+          className="text-2xl font-bold cursor-pointer"
+          onClick={() => navigate("/admin")}
+        >
+          Zenvy
+        </h1>
 
         <nav className="space-x-6">
-          <span className="cursor-pointer">Beranda</span>
-          <span className="cursor-pointer">Produk</span>
-          <span className="cursor-pointer">Tentang Kami</span>
+          <span 
+            className="cursor-pointer hover:text-green-700 transition"
+            onClick={() => {
+              navigate("/");
+              setTimeout(() => {
+                const el = document.getElementById("hero");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }, 100);
+            }}
+          >
+            Beranda
+          </span>
+          <span 
+            className="cursor-pointer hover:text-green-700 transition"
+            onClick={() => {
+              navigate("/");
+              setTimeout(() => {
+                const el = document.getElementById("produk");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }, 100);
+            }}
+          >
+            Produk
+          </span>
+          <span 
+            className="cursor-pointer hover:text-green-700 transition"
+            onClick={() => {
+              navigate("/");
+              setTimeout(() => {
+                const el = document.getElementById("footer");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }, 100);
+            }}
+          >
+            Tentang Kami
+          </span>
         </nav>
 
         <div className="flex gap-4 text-xl">

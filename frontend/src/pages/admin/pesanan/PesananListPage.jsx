@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
-
+import { Search, ChevronDown, Star, ArrowRight } from "lucide-react";
 // Komponen header kolom sortable
 function SortableTh({ label, sortKey, currentSort, currentDir, onSort }) {
   const active = currentSort === sortKey;
@@ -158,14 +158,16 @@ export default function PesananListPage() {
       {/* TOOLBAR */}
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         {/* Search */}
-        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 bg-white w-64">
+        <div className="relative w-[400px]">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Masukkan Pencarian ..."
-            className="flex-1 outline-none text-sm"
+            className="w-full bg-primary-100 border-2 border-primary-200 rounded-lg px-4 py-2 pr-10"
           />
-          <span className="text-gray-400 ml-2">🔍</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 hover:scale-105">
+            <Search size={28} />
+          </span>
         </div>
 
         {/* Buttons */}
@@ -200,7 +202,7 @@ export default function PesananListPage() {
           {!modeUpdate && (
             <button
               onClick={() => setModeUpdate(true)}
-              className="bg-orange-400 hover:bg-orange-500 text-white px-5 py-2 rounded-md text-sm font-semibold"
+              className="tombol-edit-2 w-[150px]"
             >
               Perbarui Status
             </button>
@@ -242,7 +244,7 @@ export default function PesananListPage() {
                     <td className="p-3 border">{formatTanggal(p.tgl_pesan)}</td>
                     <td className="p-3 border">{formatRupiah(p.total_tagihan)}</td>
                     <td className="p-3 border">
-                      <span className={`text-white text-xs px-3 py-1 rounded-full ${STATUS_COLORS[p.status_pesanan] || "bg-gray-400"}`}>
+                      <span className={`status-box text-white text-xs px-3 py-1 rounded-[10px] ${STATUS_COLORS[p.status_pesanan] || "bg-gray-400"}`}>
                         {p.status_pesanan || "-"}
                       </span>
                     </td>
@@ -258,7 +260,7 @@ export default function PesananListPage() {
                         <div className="flex justify-center gap-2">
                           <button
                             onClick={() => navigate(`/admin/pesanan/detail/${p.id_pesanan}`)}
-                            className="bg-gray-500 text-white px-3 py-1 rounded text-xs"
+                            className="tombol-edit"
                           >
                             Detail
                           </button>
@@ -268,7 +270,7 @@ export default function PesananListPage() {
                               setModeUpdate(false);
                               setShowModal(true);
                             }}
-                            className="bg-[#3b0000] text-white px-3 py-1 rounded text-xs"
+                            className="tombol-hapus"
                           >
                             Hapus
                           </button>

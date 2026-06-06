@@ -62,8 +62,123 @@ const deleteAdmin = async (req, res) => {
   }
 };
 
+const getDashboardStats = async (req, res) => {
+  try {
+    // 1. Total Customer
+    const [customerRows] = await db.query(
+      'SELECT COUNT(*) AS total FROM users WHERE level_akses = "customer"'
+    );
+    const totalCustomers = customerRows[0]?.total || 0;
+
+    // 2. Orders Today
+    const [ordersTodayRows] = await db.query(
+      'SELECT COUNT(*) AS total FROM pesanan WHERE DATE(tgl_pesan) = CURDATE()'
+    );
+    const ordersToday = ordersTodayRows[0]?.total || 0;
+
+    // 3. Revenue Month
+    const [revenueMonthRows] = await db.query(
+      `SELECT COALESCE(SUM(total_tagihan), 0) AS total FROM pesanan 
+       WHERE MONTH(tgl_pesan) = MONTH(CURDATE()) AND YEAR(tgl_pesan) = YEAR(CURDATE())
+       AND status_pesanan NOT IN ("dibatalkan", "gagal")`
+    );
+    const revenueMonth = revenueMonthRows[0]?.total || 0;
+
+    // 4. Total Products
+    const [productRows] = await db.query('SELECT COUNT(*) AS total FROM produk');
+    const totalProducts = productRows[0]?.total || 0;
+
+    // 5. Sales Monthly (6 months)
+    const [salesMonthlyRows] = await db.query(
+      `SELECT DATE_FORMAT(tgl_pesan, "%b") AS month, COALESCE(SUM(total_tagihan), 0) AS sales
+       FROM pesanan
+       WHERE tgl_pesan >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+       AND status_pesanan NOT IN ("dibatalkan", "gagal")
+       GROUP BY YEAR(tgl_pesan), MONTH(tgl_pesan), DATE_FORMAT(tgl_pesan, "%b")
+       ORDER BY YEAR(tgl_pesan) ASC, MONTH(tgl_pesan) ASC`
+    );
+
+    // 6. Order Status
+    const [orderStatusRows] = await db.query(
+      'SELECT status_pesanan AS name, COUNT(*) AS value FROM pesanan GROUP BY status_pesanan'
+    );
+
+    // 7. Weekly Orders (7 days)
+    const [weeklyOrdersRows] = await db.query(
+      `SELECT DATE_FORMAT(tgl_pesan, "%a") AS day, COUNT(*) AS total
+       FROM pesanan
+       WHERE tgl_pesan >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+       GROUP BY DATE(tgl_pesan), DATE_FORMAT(tgl_pesan, "%a")
+       ORDER BY DATE(tgl_pesan) ASC`
+    );
+
+    // 8. Best Selling Products
+    const [bestSellingRows] = await db.query(
+      `SELECT p.nama_produk AS name, SUM(dp.jumlah) AS sold
+       FROM detail_pesanan dp
+       JOIN varian_produk vp ON dp.id_varian = vp.id_varian
+       JOIN produk p ON vp.id_produk = p.id_produk
+       GROUP BY p.id_produk, p.nama_produk
+       ORDER BY sold DESC
+       LIMIT 5`
+    );
+
+    // 9. Recent Activity
+    const [recentOrders] = await db.query(
+      `SELECT id_pesanan, total_tagihan, status_pesanan, tgl_pesan
+       FROM pesanan ORDER BY id_pesanan DESC LIMIT 5`
+    );
+
+    const [lowStockItems] = await db.query(
+      `SELECT p.nama_produk, vp.warna, vp.ukuran, vp.stok
+       FROM varian_produk vp
+       JOIN produk p ON vp.id_produk = p.id_produk
+       WHERE vp.stok <= 5 LIMIT 3`
+    );
+
+    res.json({
+      stats: {
+        totalCustomers,
+        ordersToday,
+        revenueMonth,
+        totalProducts,
+      },
+      salesMonthly: salesMonthlyRows.length > 0 ? salesMonthlyRows : [
+        { month: "Jan", sales: 0 },
+        { month: "Feb", sales: 0 },
+        { month: "Mar", sales: 0 },
+        { month: "Apr", sales: 0 },
+        { month: "Mei", sales: 0 },
+        { month: "Jun", sales: 0 },
+      ],
+      orderStatus: orderStatusRows.length > 0 ? orderStatusRows : [
+        { name: "selesai", value: 0 },
+        { name: "diproses", value: 0 },
+        { name: "dibatalkan", value: 0 },
+      ],
+      weeklyOrders: weeklyOrdersRows.length > 0 ? weeklyOrdersRows : [
+        { day: "Sen", total: 0 },
+        { day: "Sel", total: 0 },
+        { day: "Rab", total: 0 },
+        { day: "Kam", total: 0 },
+        { day: "Jum", total: 0 },
+        { day: "Sab", total: 0 },
+        { day: "Min", total: 0 },
+      ],
+      bestSelling: bestSellingRows.length > 0 ? bestSellingRows : [
+        { name: "Belum ada data", sold: 0 }
+      ],
+      recentOrders,
+      lowStockItems,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAdminProfile,
   updateAdminProfile,
-  deleteAdmin
+  deleteAdmin,
+  getDashboardStats
 };

@@ -5,6 +5,7 @@ const { verifyAdmin } = require('../middleware/admin.middleware');
 
 router.get('/profile', verifyAdmin, adminController.getAdminProfile);
 router.put('/profile', verifyAdmin, adminController.updateAdminProfile);
+router.get('/dashboard-stats', verifyAdmin, adminController.getDashboardStats);
 router.delete('/:id', verifyAdmin, adminController.deleteAdmin);
 
 module.exports = router;
