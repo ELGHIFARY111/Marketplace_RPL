@@ -57,7 +57,11 @@ export default function ProdukDetailPage() {
 
           // Fetch foto produk
           if (data.images && Array.isArray(data.images)) {
-            const fotoUrls = data.images.map(img => `http://localhost:5000/uploads/${img}`);
+            const fotoUrls = data.images.map(img => {
+              if (img.startsWith("http://") || img.startsWith("https://")) return img;
+              const cleanImg = img.replace("public/uploads/", "").replace("uploads/", "");
+              return `http://localhost:5000/uploads/${cleanImg}`;
+            });
             setPreviewUrls(fotoUrls);
           }
 
