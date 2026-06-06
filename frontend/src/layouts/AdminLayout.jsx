@@ -12,7 +12,7 @@ import {
 
 export default function AdminLayout({ children }) {
   return (
-    <div className="min-h-screen bg-[#f3efe9]">
+    <div className="min-h-screen bg-[#f3efe9] ">
 
       {/* Navbar */}
       <header className="flex items-center justify-between px-8 py-4 bg-[#f3efe9]">
