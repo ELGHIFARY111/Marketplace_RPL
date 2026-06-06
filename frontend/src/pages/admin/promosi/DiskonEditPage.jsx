@@ -1,53 +1,24 @@
 import AdminLayout from "../../../layouts/AdminLayout";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-export default function KuponEditPage() {
+export default function DiskonEditPage() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // ambil id dari URL
 
+  // 🔥 DATA AWAL (nanti ganti dari API / props)
   const [formData, setFormData] = useState({
-    id: "",
-    kode: "",
-    tanggalKadaluarsa: "",
-    kuota: 0,
-    diskon: 0,
+    id: id,
+    produk: "Kaos Cap 3 Kucing",
+    tanggalKadaluarsa: "2026-04-22",
+    diskon: 40,
   });
-
-  // 🔥 SIMULASI AMBIL DATA (NANTI GANTI API)
-  useEffect(() => {
-    const dataDummy = {
-      id: id,
-      kode: "disk129",
-      tanggalKadaluarsa: "2026-04-22",
-      kuota: 10,
-      diskon: 40,
-    };
-
-    setFormData(dataDummy);
-  }, [id]);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const tambahKuota = () => {
-    setFormData({
-      ...formData,
-      kuota: formData.kuota + 1,
-    });
-  };
-
-  const kurangKuota = () => {
-    if (formData.kuota > 0) {
-      setFormData({
-        ...formData,
-        kuota: formData.kuota - 1,
-      });
-    }
   };
 
   const tambahDiskon = () => {
@@ -71,20 +42,20 @@ export default function KuponEditPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("Data update:", formData);
+    console.log("Update Diskon:", formData);
 
-    alert("Kupon berhasil diupdate");
-
-    navigate("/admin/promosi-kupon"); // ✅ pindah halaman
-    };
+    alert("Diskon berhasil diupdate");
+    navigate("/admin/promosi-diskon");
+  };
 
   return (
     <AdminLayout>
       <div>
+
         {/* HEADER */}
         <div className="flex items-end gap-2">
           <h1 className="text-[3rem] font-bold">
-            Kupon
+            Promo
           </h1>
 
           <span className="text-lg font-semibold mb-2">
@@ -94,10 +65,10 @@ export default function KuponEditPage() {
 
         <div className="w-full h-[2px] bg-primary-200 mb-4"></div>
 
-        {/* TOMBOL */}
+        {/* BUTTON */}
         <div className="flex justify-end gap-2 mb-8">
           <button
-            onClick={() => navigate("/admin/promosi-kupon")}
+            onClick={() => navigate("/admin/promosi-diskon")}
             className="px-8 py-2 rounded-md bg-gray-400 text-white font-semibold"
           >
             Batal
@@ -117,25 +88,25 @@ export default function KuponEditPage() {
 
             {/* ID */}
             <label className="font-semibold">
-              ID Kupon
+              ID Produk
             </label>
 
             <input
               type="text"
               value={formData.id}
-              readOnly
-              className="bg-gray-200 border border-gray-300 rounded-lg px-4 py-2"
+              disabled
+              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
             />
 
-            {/* KODE */}
+            {/* PRODUK */}
             <label className="font-semibold">
-              Kode Kupon
+              Pilih Produk
             </label>
 
             <input
               type="text"
-              name="kode"
-              value={formData.kode}
+              name="produk"
+              value={formData.produk}
               onChange={handleChange}
               className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
             />
@@ -152,33 +123,6 @@ export default function KuponEditPage() {
               onChange={handleChange}
               className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
             />
-
-            {/* KUOTA */}
-            <label className="font-semibold">
-              Masukkan Kuota
-            </label>
-
-            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden">
-              <button
-                type="button"
-                onClick={tambahKuota}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                +
-              </button>
-
-              <div className="flex-1 text-center">
-                {formData.kuota}
-              </div>
-
-              <button
-                type="button"
-                onClick={kurangKuota}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                -
-              </button>
-            </div>
 
             {/* DISKON */}
             <label className="font-semibold">
@@ -209,6 +153,7 @@ export default function KuponEditPage() {
 
           </div>
         </div>
+
       </div>
     </AdminLayout>
   );

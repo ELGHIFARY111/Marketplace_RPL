@@ -59,7 +59,9 @@ export default function KuponFormPage() {
     console.log(formData);
 
     alert("Kupon berhasil disimpan");
-  };
+
+    navigate("/admin/promosi-kupon"); // ✅ pindah halaman
+    };
 
   return (
     <AdminLayout>

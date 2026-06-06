@@ -28,8 +28,14 @@ import VarianDetailPage from "./pages/admin/produk/VarianDetailPage";
 import KuponPage from "./pages/admin/promosi/KuponPage";
 import KuponFormPage from "./pages/admin/promosi/KuponFormPage";
 import KuponEditPage from "./pages/admin/promosi/KuponEditPage";
+import DiskonPage from "./pages/admin/promosi/DiskonPage";
+import DiskonFormPage from "./pages/admin/promosi/DiskonFormPage";
+import DiskonEditPage from "./pages/admin/promosi/DiskonEditPage";
 import PesananListPage from "./pages/admin/pesanan/PesananListPage";
 import PesananDetailAdminPage from "./pages/admin/pesanan/PesananDetailAdminPage";
+import AkunAksesPage from "./pages/admin/akun-akses/AkunAksesPage";
+import AkunFormPage from "./pages/admin/akun-akses/AkunFormPage";
+import AkunEditPage from "./pages/admin/akun-akses/AkunEditPage";
 
 {/* Route Guards */}
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -74,8 +80,12 @@ export default function App() {
         <Route path="/admin/promosi-kupon" element={<AdminRoute><KuponPage /></AdminRoute>} />
         <Route path="/admin/promosi-kupon/tambah" element={<AdminRoute><KuponFormPage /></AdminRoute>}/>
         <Route path="/admin/promosi-kupon/edit/:id" element={<AdminRoute><KuponEditPage /></AdminRoute>} />
-        <Route path="/admin/promosi-diskon" element={<AdminRoute><DashboardPage /></AdminRoute>} />
-        <Route path="/admin/akun-dan-akses" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/promosi-diskon" element={<AdminRoute><DiskonPage /></AdminRoute>} />
+        <Route path="/admin/promosi-diskon/tambah" element={<AdminRoute><DiskonFormPage /></AdminRoute>} />
+        <Route path="/admin/promosi-diskon/edit/:id" element={<AdminRoute><DiskonEditPage /></AdminRoute>} />
+        <Route path="/admin/akun-akses" element={<AkunAksesPage />} />
+        <Route path="/admin/akun-akses/tambah" element={<AkunFormPage />} />
+        <Route path="/admin/akun-akses/edit/:id" element={<AkunEditPage />} />
         <Route path="/admin/cs" element={<AdminRoute><DashboardPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>

@@ -60,7 +60,7 @@ export default function AdminSidebar() {
           )}
         </li>
 
-        <li><NavLink to="/admin/akun-dan-akses" className={linkClass}>Akun dan Akses</NavLink></li>
+        <li><NavLink to="/admin/akun-akses" className={linkClass}>Akun dan Akses</NavLink></li>
         <li><NavLink to="/admin/cs" className={linkClass}>Customer Service</NavLink></li>
       </ul>
     </aside>
