@@ -1,9 +1,11 @@
 import AdminLayout from "../../../layouts/AdminLayout";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 
 export default function KuponPage() {
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   const kuponData = [
     {
@@ -43,7 +45,7 @@ export default function KuponPage() {
   );
 
   const handleEdit = (id) => {
-    console.log("Edit kupon:", id);
+    navigate(`/admin/promosi-kupon/edit/${id}`);
   };
 
   const handleDelete = (id) => {
@@ -80,7 +82,10 @@ export default function KuponPage() {
             </span>
           </div>
 
-          <button className="tombol-tambah">
+          <button
+            onClick={() => navigate("/admin/promosi-kupon/tambah")}
+            className="tombol-tambah"
+          >
             Tambah +
           </button>
         </div>
@@ -89,9 +94,9 @@ export default function KuponPage() {
         <div className="rounded-[15px] overflow-hidden border-2 border-[#D9D9D9]">
           <div className="max-h-[40rem] overflow-y-auto">
             <table className="w-full border-collapse">
-              <thead className="bg-primary-100 sticky -top-1 z-10 border-b-2 border-[#D9D9D9]">
+              <thead className="bg-primary-100 sticky top-0 z-10 border-b-2 border-[#D9D9D9]">
                 <tr>
-                  <th className="border-r-2 border-[#D9D9D9] p-3">
+                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
                     ID
                   </th>
 
@@ -99,19 +104,19 @@ export default function KuponPage() {
                     Kode Kupon
                   </th>
 
-                  <th className="border-r-2 border-[#D9D9D9] p-3">
+                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
                     Batas Waktu
                   </th>
 
-                  <th className="border-r-2 border-[#D9D9D9] p-3">
+                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
                     Kuota
                   </th>
 
-                  <th className="border-r-2 border-[#D9D9D9] p-3">
+                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
                     Diskon
                   </th>
 
-                  <th className="p-3">
+                  <th className="p-3 text-center">
                     Aksi
                   </th>
                 </tr>
