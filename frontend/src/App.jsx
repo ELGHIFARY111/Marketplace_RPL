@@ -25,6 +25,7 @@ import ProdukFormPage from "./pages/admin/produk/ProdukFormPage";
 import ProdukDetailPage from "./pages/admin/produk/ProdukDetailPage";
 import VarianFormPage from "./pages/admin/produk/VarianFormPage";
 import VarianDetailPage from "./pages/admin/produk/VarianDetailPage";
+import KuponPage from "./pages/admin/promosi/KuponPage";
 
 {/* Route Guards */}
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -64,7 +65,7 @@ export default function App() {
         <Route path="/admin/varian/edit/:id" element={<AdminRoute><VarianFormPage /></AdminRoute>} />
         <Route path="/admin/varian/detail/:id" element={<AdminRoute><VarianDetailPage /></AdminRoute>} />
         <Route path="/admin/pesanan" element={<AdminRoute><DashboardPage /></AdminRoute>} />
-        <Route path="/admin/promosi-kupon" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/promosi-kupon" element={<AdminRoute><KuponPage /></AdminRoute>} />
         <Route path="/admin/promosi-diskon" element={<AdminRoute><DashboardPage /></AdminRoute>} />
         <Route path="/admin/akun-dan-akses" element={<AdminRoute><DashboardPage /></AdminRoute>} />
         <Route path="/admin/cs" element={<AdminRoute><DashboardPage /></AdminRoute>} />

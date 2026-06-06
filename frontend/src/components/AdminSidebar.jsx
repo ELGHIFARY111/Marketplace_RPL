@@ -22,7 +22,7 @@ export default function AdminSidebar() {
     }`;
 
   return (
-    <aside className="w-60 h-[50rem] -ml-8 bg-white rounded-2xl p-5 shadow-sm">
+    <aside className="w-60 sticky top-5 h-[50rem] -ml-8 bg-white rounded-2xl p-5 shadow-sm">
       <ul className="space-y-2">
         <li><NavLink to="/admin" className={linkClass} end>Dashboard</NavLink></li>
         <li><NavLink to="/admin/profil" className={linkClass} end>Profil</NavLink></li>
