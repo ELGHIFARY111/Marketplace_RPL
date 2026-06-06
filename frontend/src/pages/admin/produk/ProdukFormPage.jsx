@@ -18,6 +18,7 @@ export default function ProdukFormPage() {
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
 
 
   useEffect(() => {
@@ -99,6 +100,30 @@ export default function ProdukFormPage() {
       setImages((prev) => prev.filter((_, index) => index !== newImageIndex));
     }
     setPreviewUrls((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      if (imageFiles.length > 0) {
+        setImages((prev) => [...prev, ...imageFiles]);
+        const newPreviews = imageFiles.map((file) => URL.createObjectURL(file));
+        setPreviewUrls((prev) => [...prev, ...newPreviews]);
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -237,12 +262,21 @@ export default function ProdukFormPage() {
               />
             </div>
             {/* Foto Produk Area */}
-            <div className="ml-[13rem]"> 
+            <div 
+              className={`ml-[13rem] w-full max-w-[800px] min-h-[300px] bg-[#F5EFE7] rounded-xl p-6 transition-all duration-200 border-2 ${
+                isDragging 
+                  ? "bg-green-50 border-dashed border-[#367C2B]" 
+                  : "border-dashed border-gray-300 hover:border-gray-400"
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            > 
               {previewUrls.length === 0 ? (
                 // State Kosong (Belum ada foto)
-                <div className="w-full max-w-[800px] h-[300px] bg-[#F5EFE7] rounded-xl flex flex-col items-center justify-center border-2 border-transparent border-dashed hover:border-gray-300">
+                <div className="w-full min-h-[250px] flex flex-col items-center justify-center">
                   <p className="text-black font-bold text-lg mb-4 text-center">
-                    Belum ada foto produk, silahkan <br/> tambahkan...
+                    Belum ada foto produk, silahkan <br/> tambahkan atau drag & drop foto ke sini...
                   </p>
                   {/* Icon Image */}
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-black border-2 border-black rounded-sm p-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -251,23 +285,33 @@ export default function ProdukFormPage() {
                 </div>
               ) : (
                 // State Terisi (Grid Foto)
-                <div className="flex flex-wrap gap-4 max-w-[900px]">
-                  {previewUrls.map((url, index) => (
-                    <div key={index} className="relative w-32 h-32 bg-[#D9D9D9] rounded-2xl p-2 flex items-center justify-center shadow-sm">
-                      <img 
-                        src={url} 
-                        alt={`Preview ${index}`} 
-                        className="max-w-full max-h-full object-contain"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute top-2 right-2 text-red-600 font-extrabold text-xl hover:scale-110 drop-shadow-md"
-                      >
-                        X
-                      </button>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-wrap gap-4">
+                    {previewUrls.map((url, index) => (
+                      <div key={index} className="relative w-32 h-32 bg-white rounded-2xl p-2 flex items-center justify-center shadow-sm border border-gray-200">
+                        <img 
+                          src={url} 
+                          alt={`Preview ${index}`} 
+                          className="max-w-full max-h-full object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-2 right-2 text-red-600 font-extrabold text-xl hover:scale-110 drop-shadow-md"
+                        >
+                          X
+                        </button>
+                      </div>
+                    ))}
+                    {/* Card Tambah Foto inside grid */}
+                    <div 
+                      onClick={() => fileInputRef.current.click()}
+                      className="w-32 h-32 bg-white rounded-2xl p-2 flex flex-col items-center justify-center border-2 border-dashed border-[#367C2B] cursor-pointer hover:bg-green-50 transition-colors shadow-sm"
+                    >
+                      <span className="text-2xl font-bold text-[#367C2B]">+</span>
+                      <span className="text-[10px] font-semibold text-[#367C2B] text-center">Tambah Foto</span>
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>
