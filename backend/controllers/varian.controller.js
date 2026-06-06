@@ -26,6 +26,7 @@ const getVarianById = async (req, res) => {
       ukuran: varian.ukuran,
       stok: varian.stok,
       harga: varian.harga,
+      berat_gram: varian.berat_gram,
       product_id: varian.id_produk
     });
   } catch (error) {
@@ -35,7 +36,7 @@ const getVarianById = async (req, res) => {
 
 const createVarian = async (req, res) => {
   try {
-    const { sku, warna, ukuran, stok, harga, product_id } = req.body;
+    const { sku, warna, ukuran, stok, harga, berat_gram, product_id } = req.body;
 
     // Validasi field wajib
     if (!product_id) {
@@ -52,8 +53,8 @@ const createVarian = async (req, res) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO varian_produk (id_produk, sku, warna, ukuran, harga, stok) VALUES (?, ?, ?, ?, ?, ?)',
-      [product_id, sku, warna, ukuran, harga || 0, stok || 0]
+      'INSERT INTO varian_produk (id_produk, sku, warna, ukuran, harga, stok, berat_gram) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [product_id, sku, warna, ukuran, harga || 0, stok || 0, berat_gram || 0]
     );
 
     res.status(201).json({ message: 'Varian berhasil ditambahkan', id: result.insertId });
@@ -65,11 +66,11 @@ const createVarian = async (req, res) => {
 const updateVarian = async (req, res) => {
   try {
     const { id } = req.params;
-    const { sku, warna, ukuran, stok, harga } = req.body;
+    const { sku, warna, ukuran, stok, harga, berat_gram } = req.body;
 
     await db.query(
-      'UPDATE varian_produk SET sku = ?, warna = ?, ukuran = ?, harga = ?, stok = ? WHERE id_varian = ?',
-      [sku, warna, ukuran, harga, stok, id]
+      'UPDATE varian_produk SET sku = ?, warna = ?, ukuran = ?, harga = ?, stok = ?, berat_gram = ? WHERE id_varian = ?',
+      [sku, warna, ukuran, harga, stok, berat_gram || 0, id]
     );
 
     res.json({ message: `Varian ${id} updated` });

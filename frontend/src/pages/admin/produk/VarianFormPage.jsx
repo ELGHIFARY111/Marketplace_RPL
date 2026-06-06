@@ -13,6 +13,7 @@ const [formData, setFormData] = useState({
     ukuran: "",
     stok: 0,
     harga: 0,
+    berat_gram: 0,
     product_id: productId || null,
 });
 
@@ -42,6 +43,7 @@ useEffect(() => {
             ukuran: data.ukuran || "",
             stok: data.stok || 0,
             harga: data.harga || 0,
+            berat_gram: data.berat_gram || 0,
             product_id: data.product_id,
         });
 
@@ -120,6 +122,7 @@ const handleSubmit = async (e) => {
         product_id: formData.product_id || productId,
         stok: Number(formData.stok),
         harga: Number(formData.harga),
+        berat_gram: Number(formData.berat_gram),
     };
 
     const res = await fetch(url, {
@@ -260,6 +263,23 @@ return (
         </div>
         </div>
 
+        {/* BERAT GRAM */}
+        <div className="flex items-center gap-4">
+        <label className="w-40 font-semibold">Berat (gram)</label>
+        <div className="flex items-center gap-2 bg-primary-100 px-4 py-2 rounded-md">
+            <button type="button" onClick={() => handleNumber("berat_gram", "minus")} className="font-bold px-2">-</button>
+            <input
+                type="number"
+                name="berat_gram"
+                value={formData.berat_gram}
+                onChange={(e) => setFormData(prev => ({ ...prev, berat_gram: Math.max(0, parseInt(e.target.value) || 0) }))}
+                className="w-32 text-center bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                min="0"
+            />
+            <button type="button" onClick={() => handleNumber("berat_gram", "plus")} className="font-bold px-2">+</button>
+        </div>
+        </div>
+
     </form>
 
     {/* TABLE */}
@@ -276,6 +296,7 @@ return (
                 <th className="p-2 border">Ukuran</th>
                 <th className="p-2 border">Stok</th>
                 <th className="p-2 border">Harga</th>
+                <th className="p-2 border">Berat (g)</th>
                 <th className="p-2 border">Aksi</th>
             </tr>
             </thead>
@@ -291,6 +312,7 @@ return (
                 <td className="p-2 border">
                     Rp. {v.harga.toLocaleString("id-ID")}
                 </td>
+                <td className="p-2 border">{v.berat_gram ?? "-"} g</td>
 
                 <td className="p-2 border">
                     <div className="flex justify-center gap-2">

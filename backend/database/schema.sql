@@ -63,6 +63,7 @@ CREATE TABLE varian_produk (
   ukuran VARCHAR(10),
   harga INT,
   stok INT,
+  berat_gram INT DEFAULT 0,
   CONSTRAINT fk_varian_produk
     FOREIGN KEY (id_produk) REFERENCES produk(id_produk)
 );

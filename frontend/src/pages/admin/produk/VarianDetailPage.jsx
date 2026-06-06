@@ -128,6 +128,13 @@ return (
             </div>
             </div>
 
+            <div className="flex items-center gap-4">
+            <label className="w-40 font-semibold">Berat</label>
+            <div className="bg-primary-100 px-4 py-2 rounded-md w-[300px]">
+                {varian.berat_gram ?? "-"} gram
+            </div>
+            </div>
+
         </div>
         </div>
     )}
@@ -158,6 +165,7 @@ return (
                 <th className="p-3 border">Ukuran</th>
                 <th className="p-3 border">Stok</th>
                 <th className="p-3 border">Harga</th>
+                <th className="p-3 border">Berat (g)</th>
                 <th className="p-3 border">Aksi</th>
             </tr>
             </thead>
@@ -174,6 +182,7 @@ return (
                     <td className="p-3 border">
                     Rp. {v.harga?.toLocaleString("id-ID")}
                     </td>
+                    <td className="p-3 border">{v.berat_gram ?? "-"} g</td>
 
                     <td className="p-3 border">
                     <div className="flex justify-center gap-2">
@@ -205,7 +214,7 @@ return (
                 ))
             ) : (
                 <tr>
-                <td colSpan="7" className="p-4 text-center text-gray-500">
+                <td colSpan="8" className="p-4 text-center text-gray-500">
                     Tidak ada varian
                 </td>
                 </tr>
