@@ -147,7 +147,9 @@ export default function KeranjangPage() {
                     <img
                       src={
                         item.file_foto
-                          ? `http://localhost:5000/uploads/${item.file_foto}`
+                          ? (item.file_foto.startsWith("http://") || item.file_foto.startsWith("https://")
+                              ? item.file_foto
+                              : `http://localhost:5000/uploads/${item.file_foto.replace("public/uploads/", "").replace("uploads/", "")}`)
                           : "/kaos.png"
                       }
                       alt={item.nama_produk}

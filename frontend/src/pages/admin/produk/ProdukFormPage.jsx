@@ -56,7 +56,11 @@ export default function ProdukFormPage() {
           
           if (data.images && data.images.length > 0) {
             setExistingImages(data.images);
-            setPreviewUrls(data.images.map(img => `http://localhost:5000/uploads/${img}`));
+            setPreviewUrls(data.images.map(img => {
+              if (img.startsWith("http://") || img.startsWith("https://")) return img;
+              const cleanImg = img.replace("public/uploads/", "").replace("uploads/", "");
+              return `http://localhost:5000/uploads/${cleanImg}`;
+            }));
           }
 
         } catch (err) {

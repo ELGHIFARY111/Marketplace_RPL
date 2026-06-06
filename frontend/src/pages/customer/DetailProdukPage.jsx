@@ -130,7 +130,11 @@ export default function DetailProdukPage() {
 
   const imageUrls =
     product?.images?.length > 0
-      ? product.images.map((img) => `http://localhost:5000/uploads/${img}`)
+      ? product.images.map((img) => {
+          if (img.startsWith("http://") || img.startsWith("https://")) return img;
+          const cleanImg = img.replace("public/uploads/", "").replace("uploads/", "");
+          return `http://localhost:5000/uploads/${cleanImg}`;
+        })
       : ["/kaos.png"];
 
   const getSelectedVarian = () => {

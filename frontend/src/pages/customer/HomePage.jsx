@@ -67,7 +67,9 @@ export default function HomePage() {
           price: p.harga || 0,
           stock: p.stok || 0,
           image: p.foto 
-            ? `http://localhost:5000/uploads/${p.foto}` 
+            ? (p.foto.startsWith("http://") || p.foto.startsWith("https://")
+                ? p.foto
+                : `http://localhost:5000/uploads/${p.foto.replace("public/uploads/", "").replace("uploads/", "")}`)
             : null,
           rating: p.avg_rating || 0,
           totalReviews: p.total_ulasan || 0,
