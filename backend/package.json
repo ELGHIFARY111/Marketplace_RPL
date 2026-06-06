@@ -24,6 +24,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.6.0",
     "ngrok": "^5.0.0-beta.2",
+    "recharts": "^3.8.1",
     "zenfy-marketplace": "file:.."
   },
   "devDependencies": {
