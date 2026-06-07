@@ -1,15 +1,32 @@
 import AdminLayout from "../../../layouts/AdminLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../../services/api";
 
 export default function DiskonFormPage() {
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   const [formData, setFormData] = useState({
     produk: "",
     tanggalKadaluarsa: "",
     diskon: 0,
   });
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await api.get("/produk");
+        setProducts(res.data || []);
+      } catch (error) {
+        console.error("Gagal mengambil produk:", error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -36,18 +53,41 @@ export default function DiskonFormPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Data Diskon:", formData);
+    if (!formData.produk) {
+      alert("Silakan pilih produk terlebih dahulu");
+      return;
+    }
 
-    alert("Diskon berhasil ditambahkan");
+    if (!formData.tanggalKadaluarsa) {
+      alert("Silakan tentukan tanggal kadaluarsa");
+      return;
+    }
+
+    if (formData.diskon <= 0) {
+      alert("Diskon harus lebih besar dari 0%");
+      return;
+    }
+
+    try {
+      await api.post("/promo", {
+        id_produk: formData.produk,
+        persentase_diskon: formData.diskon,
+        batas_waktu: formData.tanggalKadaluarsa,
+      });
+      alert("Diskon berhasil ditambahkan");
+      navigate("/admin/promosi-diskon");
+    } catch (error) {
+      console.error("Gagal menambahkan diskon:", error);
+      alert(error.response?.data?.message || "Gagal menambahkan diskon");
+    }
   };
 
   return (
     <AdminLayout>
       <div>
-
         {/* HEADER */}
         <div className="flex items-end gap-2">
           <h1 className="text-[3rem] font-bold">
@@ -81,20 +121,28 @@ export default function DiskonFormPage() {
         {/* FORM */}
         <div className="max-w-4xl">
           <div className="grid grid-cols-[250px_1fr] gap-y-6 items-center">
-
             {/* PRODUK */}
             <label className="font-semibold">
               Pilih Produk
             </label>
 
-            <input
-              type="text"
-              name="produk"
-              value={formData.produk}
-              onChange={handleChange}
-              placeholder="Pilih atau Masukkan Produk ..."
-              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
-            />
+            {loadingProducts ? (
+              <span className="text-gray-500">Memuat produk...</span>
+            ) : (
+              <select
+                name="produk"
+                value={formData.produk}
+                onChange={handleChange}
+                className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
+              >
+                <option value="">-- Pilih Produk --</option>
+                {products.map((p) => (
+                  <option key={p.id_produk} value={p.id_produk}>
+                    {p.nama} (Rp {p.harga?.toLocaleString("id-ID")})
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* TANGGAL */}
             <label className="font-semibold">
@@ -114,31 +162,29 @@ export default function DiskonFormPage() {
               Masukkan Presentase Diskon
             </label>
 
-            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden">
+            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden w-64 justify-between">
               <button
                 type="button"
-                onClick={tambahDiskon}
-                className="px-4 py-2 text-xl font-bold"
+                onClick={kurangDiskon}
+                className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
               >
-                +
+                -
               </button>
 
-              <div className="flex-1 text-center">
+              <div className="flex-1 text-center font-bold">
                 {formData.diskon}%
               </div>
 
               <button
                 type="button"
-                onClick={kurangDiskon}
-                className="px-4 py-2 text-xl font-bold"
+                onClick={tambahDiskon}
+                className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
               >
-                -
+                +
               </button>
             </div>
-
           </div>
         </div>
-
       </div>
     </AdminLayout>
   );

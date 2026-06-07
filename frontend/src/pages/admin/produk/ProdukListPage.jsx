@@ -3,11 +3,44 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import { Search, ChevronDown, Star, ArrowRight } from "lucide-react";
+
+// Komponen header kolom sortable
+function SortableTh({ label, sortKey, currentSort, currentDir, onSort, className = "" }) {
+  const active = currentSort === keyToUse(sortKey);
+  function keyToUse(k) { return k; }
+  const isLeft = className.includes("text-left");
+  return (
+    <th
+      onClick={() => onSort(sortKey)}
+      className={`cursor-pointer select-none hover:bg-primary-200 transition p-3 border ${className}`}
+    >
+      <span className={`flex items-center gap-1 ${isLeft ? "justify-start" : "justify-center"}`}>
+        {label}
+        <span className="text-xs text-gray-400">
+          {active ? (currentDir === "asc" ? "▲" : "▼") : "⇅"}
+        </span>
+      </span>
+    </th>
+  );
+}
+
 export default function ProdukListPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+
+  const [sortKey, setSortKey] = useState("id_produk");
+  const [sortDir, setSortDir] = useState("asc");
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
 
   useEffect(() => {
   const fetchProducts = async () => {
@@ -80,18 +113,26 @@ export default function ProdukListPage() {
             <table className="produk-table w-full border-collapse ">
               <thead className="bg-primary-100 sticky -top-1 z-10 border-b-2 border-[#D9D9D9]"> 
                 <tr>
-                  <th>ID</th>
-                  <th>Nama Produk</th>
-                  <th>Stok</th>
-                  <th>Kategori</th>
-                  <th>Aksi</th>
+                  <SortableTh label="ID" sortKey="id_produk" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
+                  <SortableTh label="Nama Produk" sortKey="nama" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="text-left" />
+                  <SortableTh label="Stok" sortKey="stok" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
+                  <SortableTh label="Kategori" sortKey="kategori" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
+                  <th className="p-3 border text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {products
+                {[...products]
                   .filter((produk) =>
                     produk.nama.toLowerCase().includes(search.toLowerCase())
                   )
+                  .sort((a, b) => {
+                    const valA = a[sortKey] ?? "";
+                    const valB = b[sortKey] ?? "";
+                    const cmp = typeof valA === "number" || sortKey === "id_produk" || sortKey === "stok"
+                      ? Number(valA) - Number(valB)
+                      : String(valA).localeCompare(String(valB), "id");
+                    return sortDir === "asc" ? cmp : -cmp;
+                  })
                   .map((produk) => (
                   <tr key={produk.id_produk}>
                     <td className="text-center">{produk.id_produk}</td>

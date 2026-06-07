@@ -10,5 +10,7 @@ router.post('/validate', voucherController.validateVoucher);
 // Protected routes
 router.post('/', authenticateToken, voucherController.createVoucher);
 router.get('/:id', authenticateToken, voucherController.getVoucherById);
+router.put('/:id', authenticateToken, voucherController.updateVoucher);
+router.delete('/:id', authenticateToken, voucherController.deleteVoucher);
 
 module.exports = router;

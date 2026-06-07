@@ -15,7 +15,10 @@ const getAllProducts = async (req, res) => {
         (SELECT ROUND(AVG(rating), 1) FROM ulasan WHERE id_produk = p.id_produk) AS avg_rating,
         (SELECT COUNT(*) FROM ulasan WHERE id_produk = p.id_produk) AS total_ulasan,
         GROUP_CONCAT(DISTINCT v.warna) AS warna_list,
-        GROUP_CONCAT(DISTINCT v.ukuran) AS ukuran_list
+        GROUP_CONCAT(DISTINCT v.ukuran) AS ukuran_list,
+        (SELECT persentase_diskon FROM promosi WHERE id_produk = p.id_produk AND batas_waktu > NOW() ORDER BY id_promosi DESC LIMIT 1) AS diskon,
+        (SELECT batas_waktu FROM promosi WHERE id_produk = p.id_produk AND batas_waktu > NOW() ORDER BY id_promosi DESC LIMIT 1) AS batas_waktu_diskon,
+        COALESCE((SELECT SUM(dp.qty) FROM detail_pesanan dp WHERE dp.id_varian IN (SELECT id_varian FROM varian_produk WHERE id_produk = p.id_produk)), 0) AS terjual
       FROM produk p
       LEFT JOIN kategori c ON p.id_kategori = c.id_kategori
       LEFT JOIN varian_produk v ON v.id_produk = p.id_produk 
@@ -57,6 +60,15 @@ const getProductById = async (req, res) => {
       [id]
     );
 
+    // Fetch active promotion/discount
+    const [promoResult] = await db.query(
+      `SELECT persentase_diskon FROM promosi 
+       WHERE id_produk = ? AND batas_waktu > NOW() 
+       ORDER BY id_promosi DESC LIMIT 1`,
+      [id]
+    );
+    const diskon = promoResult.length > 0 ? Number(promoResult[0].persentase_diskon) : 0;
+
     const productData = {
       id_produk: produk[0].id_produk,
       name: produk[0].nama_produk,
@@ -68,7 +80,8 @@ const getProductById = async (req, res) => {
       images: foto.map(f => f.file_foto),
       varian: varian,
       avg_rating: ratingResult[0]?.avg_rating || 0,
-      total_ulasan: ratingResult[0]?.total_ulasan || 0
+      total_ulasan: ratingResult[0]?.total_ulasan || 0,
+      diskon: diskon
     };
 
     res.json(productData);

@@ -1,6 +1,7 @@
 import AdminLayout from "../../../layouts/AdminLayout";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../../../services/api";
 
 export default function AkunEditPage() {
   const navigate = useNavigate();
@@ -15,18 +16,28 @@ export default function AkunEditPage() {
     password: "",
   });
 
-  // 🔥 simulasi ambil data (nanti bisa dari API)
   useEffect(() => {
-    const dataDummy = {
-      id: id,
-      nama: "Adit Sopo",
-      email: "adit@gmai.com",
-      telpon: "080000010001",
-      level: "admin",
-      password: "************",
+    const fetchUserDetail = async () => {
+      try {
+        const res = await api.get(`/admin/users/${id}`);
+        const user = res.data;
+        setFormData({
+          id: user.id_user,
+          nama: user.nama_lengkap || "",
+          email: user.email || "",
+          telpon: user.no_telp || "",
+          level: user.level_akses || "",
+          password: "****************",
+        });
+      } catch (error) {
+        console.error("Gagal mengambil detail user:", error);
+        alert("Gagal memuat detail akun");
+      }
     };
 
-    setFormData(dataDummy);
+    if (id) {
+      fetchUserDetail();
+    }
   }, [id]);
 
   const handleChange = (e) => {
@@ -36,13 +47,22 @@ export default function AkunEditPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(formData);
-    alert("Akun berhasil diupdate");
+    if (!formData.nama || !formData.email || !formData.level) {
+      alert("Mohon lengkapi nama, email, dan level akses!");
+      return;
+    }
 
-    navigate("/admin/akun-akses");
+    try {
+      await api.put(`/admin/users/${id}`, formData);
+      alert("Akun berhasil diupdate");
+      navigate("/admin/akun-akses");
+    } catch (error) {
+      console.error("Gagal memperbarui akun:", error);
+      alert(error.response?.data?.message || "Gagal memperbarui akun");
+    }
   };
 
   return (
@@ -142,7 +162,7 @@ export default function AkunEditPage() {
               className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
             >
               <option value="admin">Admin</option>
-              <option value="staff">Staff</option>
+              <option value="customer">Customer</option>
             </select>
 
             {/* Password */}

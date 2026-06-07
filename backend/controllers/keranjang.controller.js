@@ -105,7 +105,7 @@ const getCart = async (req, res) => {
         vp.sku,
         vp.warna,
         vp.ukuran,
-        vp.harga,
+        vp.harga AS harga_original,
         vp.stok,
         vp.berat_gram,
 
@@ -120,7 +120,8 @@ const getCart = async (req, res) => {
           LIMIT 1
         ) AS file_foto,
 
-        (vp.harga * k.qty) AS subtotal,
+        (SELECT persentase_diskon FROM promosi WHERE id_produk = p.id_produk AND batas_waktu > NOW() ORDER BY id_promosi DESC LIMIT 1) AS persentase_diskon,
+
         (vp.berat_gram * k.qty) AS total_berat
       FROM keranjang k
       JOIN varian_produk vp ON k.id_varian = vp.id_varian
@@ -131,9 +132,23 @@ const getCart = async (req, res) => {
       [userId]
     );
 
+    const mappedItems = items.map((item) => {
+      const diskon = Number(item.persentase_diskon || 0);
+      const hargaOriginal = Number(item.harga_original || 0);
+      const harga = diskon > 0 ? Math.round(hargaOriginal * (1 - diskon / 100)) : hargaOriginal;
+      const subtotal = harga * Number(item.qty || 1);
+
+      return {
+        ...item,
+        harga,
+        harga_original: hargaOriginal,
+        subtotal,
+      };
+    });
+
     res.json({
       message: "Keranjang berhasil diambil",
-      data: items,
+      data: mappedItems,
     });
   } catch (error) {
     console.error("Get cart error:", error);

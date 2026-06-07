@@ -123,7 +123,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="bg-gray-100 min-h-screen p-6">
+      <div className="bg-primary-100 min-h-screen p-6 rounded-[20px]">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800">

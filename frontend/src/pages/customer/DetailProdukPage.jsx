@@ -354,9 +354,25 @@ export default function DetailProdukPage() {
             </div>
 
             <div className="mt-3 flex items-end gap-4">
-              <h2 className="text-4xl font-bold font-serif">
-                Rp. {Number(currentPrice || 0).toLocaleString("id-ID")}
-              </h2>
+              {product.diskon > 0 ? (
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-4xl font-bold font-serif text-red-500">
+                      Rp. {Number(Math.round(currentPrice * (1 - product.diskon / 100))).toLocaleString("id-ID")}
+                    </h2>
+                    <span className="bg-red-100 text-red-700 text-sm font-bold px-2.5 py-0.5 rounded-full">
+                      {Math.round(product.diskon)}% OFF
+                    </span>
+                  </div>
+                  <span className="text-lg text-gray-400 line-through">
+                    Rp. {Number(currentPrice).toLocaleString("id-ID")}
+                  </span>
+                </div>
+              ) : (
+                <h2 className="text-4xl font-bold font-serif">
+                  Rp. {Number(currentPrice || 0).toLocaleString("id-ID")}
+                </h2>
+              )}
             </div>
 
             {product.description && (

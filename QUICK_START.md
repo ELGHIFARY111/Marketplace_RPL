@@ -42,7 +42,10 @@ npm start     # production
 Backend akan running di `http://localhost:5000`
 
 ---
-
+## midtrans
+```bash
+npx localtunnel --port 5000 --subdomain every-rules-clean
+```
 ## 2️⃣ Setup Frontend
 
 ```bash

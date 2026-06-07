@@ -9,11 +9,12 @@ import {
   Landmark,
   Store,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../services/api";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [alamatList, setAlamatList] = useState([]);
   const [selectedAlamatId, setSelectedAlamatId] = useState("");
@@ -33,6 +34,9 @@ export default function CheckoutPage() {
   const [loadingKeranjang, setLoadingKeranjang] = useState(true);
   const [loadingOngkir, setLoadingOngkir] = useState(false);
   const [loadingBayar, setLoadingBayar] = useState(false);
+
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
 
   const subtotal = cartItems.reduce((total, item) => {
     const harga = Number(item.harga || item.harga_satuan || item.harga_produk || 0);
@@ -54,7 +58,8 @@ export default function CheckoutPage() {
 
   const pajak = Math.round(subtotal * 0.02);
   const ongkir = selectedShipping ? Number(selectedShipping.cost) : 0;
-  const totalPembayaran = subtotal + pajak + ongkir;
+  const voucherDiscount = appliedVoucher ? Number(appliedVoucher.nominal_diskon) : 0;
+  const totalPembayaran = Math.max(0, subtotal + pajak + ongkir - voucherDiscount);
 
   const paymentOptions = [
     {
@@ -201,7 +206,16 @@ export default function CheckoutPage() {
           res.data;
 
         if (Array.isArray(dataKeranjang)) {
-          setCartItems(dataKeranjang);
+          const selectedIds = location.state?.selectedIds;
+          if (selectedIds && Array.isArray(selectedIds)) {
+            setCartItems(
+              dataKeranjang.filter((item) =>
+                selectedIds.includes(item.id_keranjang)
+              )
+            );
+          } else {
+            setCartItems(dataKeranjang);
+          }
         } else {
           console.error("Format keranjang bukan array:", dataKeranjang);
           setCartItems([]);
@@ -310,6 +324,26 @@ export default function CheckoutPage() {
     });
   };
 
+  const handleApplyVoucher = async () => {
+    if (!couponCode.trim()) {
+      alert("Masukkan kode kupon terlebih dahulu");
+      return;
+    }
+
+    try {
+      const res = await api.post("/voucher/validate", { code: couponCode });
+      if (res.data?.valid) {
+        setAppliedVoucher(res.data.voucher);
+        alert(`Kupon ${res.data.voucher.kode_voucher} berhasil digunakan!`);
+      } else {
+        alert(res.data?.message || "Kupon tidak valid");
+      }
+    } catch (error) {
+      console.error("Gagal memvalidasi kupon:", error);
+      alert(error.response?.data?.message || "Kupon tidak valid");
+    }
+  };
+
   const handleBayar = async () => {
     try {
       if (loadingKeranjang) {
@@ -348,6 +382,7 @@ export default function CheckoutPage() {
 
       const payload = {
         id_alamat: selectedAlamat.id_alamat,
+        id_voucher: appliedVoucher ? appliedVoucher.id_voucher : null,
 
         kurir_code: selectedShipping.code,
         kurir_service: selectedShipping.service,
@@ -363,6 +398,7 @@ export default function CheckoutPage() {
         total_berat: totalWeight,
         subtotal,
         pajak,
+        voucher_discount: voucherDiscount,
         total_pembayaran: totalPembayaran,
       };
 
@@ -391,6 +427,8 @@ export default function CheckoutPage() {
         subtotal,
         pajak,
         total_pembayaran: totalPembayaran,
+        kode_voucher: appliedVoucher ? appliedVoucher.kode_voucher : null,
+        nominal_voucher: appliedVoucher ? appliedVoucher.nominal_diskon : 0,
       };
 
       localStorage.setItem("lastPaymentData", JSON.stringify(detailPesanan));
@@ -560,16 +598,37 @@ export default function CheckoutPage() {
                   <div className="flex gap-3">
                     <input
                       placeholder="Masukkan Kupon anda..."
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
                       className="flex-1 rounded-md bg-[#d9d9d9] px-4 py-4 font-serif outline-none placeholder:text-gray-500"
                     />
 
                     <button
                       type="button"
+                      onClick={handleApplyVoucher}
                       className="rounded-md bg-black px-7 font-serif text-white hover:bg-[#b89578] transition"
                     >
                       Gunakan
                     </button>
                   </div>
+
+                  {appliedVoucher && (
+                    <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 border border-green-200 px-4 py-3 font-serif text-sm text-green-700">
+                      <div>
+                        Kupon <span className="font-bold">{appliedVoucher.kode_voucher}</span> berhasil digunakan! (Diskon {formatRupiah(appliedVoucher.nominal_diskon)})
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAppliedVoucher(null);
+                          setCouponCode("");
+                        }}
+                        className="text-red-500 hover:text-red-700 font-bold ml-2"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -645,9 +704,16 @@ export default function CheckoutPage() {
                   <span>{formatRupiah(pajak)}</span>
                 </div>
 
+                {appliedVoucher && (
+                  <div className="flex justify-between text-green-700 font-semibold">
+                    <span>Diskon Kupon ({appliedVoucher.kode_voucher})</span>
+                    <span>-{formatRupiah(appliedVoucher.nominal_diskon)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between pt-8">
                   <span>Total Pembayaran</span>
-                  <span className="font-bold">
+                  <span className="font-bold font-serif">
                     {formatRupiah(totalPembayaran)}
                   </span>
                 </div>

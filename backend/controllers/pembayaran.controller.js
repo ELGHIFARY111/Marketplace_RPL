@@ -45,6 +45,9 @@ const getStatusMapping = (transactionStatus, fraudStatus) => {
   };
 };
 
+const advancedStatuses = ["diproses", "dikirim", "terkirim", "selesai", "dibatalkan"];
+
+
 
 const createCorePayment = async (req, res) => {
   const connection = await pool.getConnection();
@@ -60,6 +63,7 @@ const createCorePayment = async (req, res) => {
 
     const {
       id_alamat,
+      id_voucher,
       kurir_code,
       kurir_service,
       kurir_name,
@@ -72,7 +76,9 @@ const createCorePayment = async (req, res) => {
       bank,
       store,
       items,
+      voucher_discount,
     } = req.body;
+
 
     if (
       !id_alamat ||
@@ -144,13 +150,28 @@ const createCorePayment = async (req, res) => {
         id_user,
         id_alamat,
         id_kurir,
-        null,
+        id_voucher || null,
         grossAmount,
         "pending_payment",
         null,
       ]
     );
 
+    if (id_voucher) {
+      const [vRows] = await connection.query(
+        "SELECT kuota FROM voucher WHERE id_voucher = ? FOR UPDATE",
+        [id_voucher]
+      );
+      if (vRows.length > 0) {
+        if (vRows[0].kuota <= 0) {
+          throw new Error("Kuota kupon telah habis");
+        }
+        await connection.query(
+          "UPDATE voucher SET kuota = kuota - 1 WHERE id_voucher = ?",
+          [id_voucher]
+        );
+      }
+    }
 
     const id_pesanan = pesananResult.insertId;
     const order_id = `PESANAN-${id_pesanan}-${Date.now()}`;
@@ -169,8 +190,16 @@ const createCorePayment = async (req, res) => {
             Number(item.subtotal || 0),
           ]
         );
+
+        // Hapus item dari keranjang user setelah dibeli
+        await connection.query(
+          `DELETE FROM keranjang WHERE id_user = ? AND id_varian = ?`,
+          [id_user, item.id_varian]
+        );
       }
     }
+
+    const discountAmount = Number(voucher_discount || 0);
 
     const itemDetails = [
       {
@@ -189,9 +218,19 @@ const createCorePayment = async (req, res) => {
         id: "pajak",
         price: pajakAmount,
         quantity: 1,
-        name: "Pajak",
+        name: "Pajak (2%)",
       },
-    ].filter((item) => item.price > 0);
+      // Diskon voucher sebagai item negatif agar total = gross_amount
+      ...(discountAmount > 0
+        ? [{
+            id: "diskon_voucher",
+            price: -discountAmount,
+            quantity: 1,
+            name: "Diskon Voucher",
+          }]
+        : []),
+    ].filter((item) => item.price !== 0);
+
 
     let parameter = {
       payment_type: payment_method,
@@ -400,7 +439,6 @@ const midtransNotification = async (req, res) => {
       [id_pesanan]
     );
     const existingStatusForNotif = pesananRowForNotif[0]?.status_pesanan;
-    const advancedStatuses = ["diproses", "dikirim", "selesai", "dibatalkan"];
 
     if (!advancedStatuses.includes(existingStatusForNotif)) {
       await pool.query(

@@ -300,6 +300,15 @@ export default function DetailPesananPage() {
                   </span>
                 </p>
 
+                {paymentData.kode_voucher && (
+                  <p className="text-green-700 font-semibold">
+                    Diskon Kupon ({paymentData.kode_voucher}):{" "}
+                    <span className="font-bold">
+                      -{formatRupiah(paymentData.nominal_voucher)}
+                    </span>
+                  </p>
+                )}
+
                 <p>
                   Total Pembayaran:{" "}
                   <span className="font-bold">

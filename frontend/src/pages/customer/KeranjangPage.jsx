@@ -10,6 +10,23 @@ export default function KeranjangPage() {
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  const toggleSelectItem = (idKeranjang) => {
+    setSelectedIds((prev) =>
+      prev.includes(idKeranjang)
+        ? prev.filter((id) => id !== idKeranjang)
+        : [...prev, idKeranjang]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === items.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(items.map((item) => item.id_keranjang));
+    }
+  };
 
   const formatRupiah = (value) => {
     return `Rp.${Number(value || 0).toLocaleString("id-ID")},00`;
@@ -21,17 +38,20 @@ export default function KeranjangPage() {
 
       console.log("DATA KERANJANG:", res.data);
 
-      const dataKeranjang =
+      const dataKeranjangRaw =
         res.data?.data ||
         res.data?.items ||
         res.data?.keranjang ||
         res.data?.cart ||
         res.data;
 
-      setItems(Array.isArray(dataKeranjang) ? dataKeranjang : []);
+      const dataKeranjang = Array.isArray(dataKeranjangRaw) ? dataKeranjangRaw : [];
+      setItems(dataKeranjang);
+      setSelectedIds(dataKeranjang.map((item) => item.id_keranjang));
     } catch (error) {
       console.error("Gagal memuat keranjang:", error);
       setItems([]);
+      setSelectedIds([]);
     } finally {
       setLoading(false);
     }
@@ -84,29 +104,34 @@ export default function KeranjangPage() {
       setItems((prevItems) =>
         prevItems.filter((item) => item.id_keranjang !== idKeranjang)
       );
+      setSelectedIds((prev) => prev.filter((id) => id !== idKeranjang));
     } catch (error) {
       console.error("Gagal menghapus item:", error);
       alert(error.response?.data?.message || "Gagal menghapus produk dari keranjang");
     }
   };
 
-  const subtotal = items.reduce(
+  const selectedItems = items.filter((item) =>
+    selectedIds.includes(item.id_keranjang)
+  );
+
+  const subtotal = selectedItems.reduce(
     (total, item) => total + Number(item.harga || 0) * Number(item.qty || 0),
     0
   );
 
-  const totalBarang = items.reduce(
+  const totalBarang = selectedItems.reduce(
     (total, item) => total + Number(item.qty || 0),
     0
   );
 
-  const totalBerat = items.reduce(
+  const totalBerat = selectedItems.reduce(
     (total, item) =>
       total + Number(item.berat_gram || 1000) * Number(item.qty || 0),
     0
   );
 
-  const tax = items.length > 0 ? Math.round(subtotal * 0.02) : 0;
+  const tax = selectedItems.length > 0 ? Math.round(subtotal * 0.02) : 0;
   const total = subtotal + tax;
 
   if (loading) {
@@ -138,11 +163,31 @@ export default function KeranjangPage() {
 
           <div className="grid grid-cols-[1.35fr_1fr] gap-10">
             <section className="rounded-lg bg-white px-5 py-5">
+              {items.length > 0 && (
+                <div className="flex items-center gap-3 border-b border-black pb-4 mb-2">
+                  <input
+                    type="checkbox"
+                    checked={items.length > 0 && selectedIds.length === items.length}
+                    onChange={toggleSelectAll}
+                    className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
+                  />
+                  <span className="font-serif font-bold text-lg">Pilih Semua ({items.length} Barang)</span>
+                </div>
+              )}
+
               {items.map((item) => (
                 <div
                   key={item.id_keranjang}
-                  className="grid grid-cols-[110px_1fr_110px_80px] gap-4 border-b border-black py-5 last:border-b"
+                  className="grid grid-cols-[40px_110px_1fr_110px_80px] gap-4 border-b border-black py-5 last:border-b-0 items-center"
                 >
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(item.id_keranjang)}
+                      onChange={() => toggleSelectItem(item.id_keranjang)}
+                      className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
+                    />
+                  </div>
                   <div className="flex h-28 w-28 items-center justify-center rounded-md bg-[#dedede]">
                     <img
                       src={
@@ -170,10 +215,20 @@ export default function KeranjangPage() {
                       Berat: {item.berat_gram || 1000} gram
                     </p>
 
-                    <div className="mt-4 flex items-center gap-2">
-                      <p className="text-xl font-bold font-serif">
+                    <div className="mt-4 flex items-baseline gap-2 flex-wrap">
+                      <p className="text-xl font-bold font-serif text-black">
                         {formatRupiah(item.harga)}
                       </p>
+                      {Number(item.persentase_diskon || 0) > 0 && (
+                        <>
+                          <span className="text-sm text-gray-400 line-through">
+                            {formatRupiah(item.harga_original)}
+                          </span>
+                          <span className="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                            Diskon {Math.round(item.persentase_diskon)}%
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -247,8 +302,8 @@ export default function KeranjangPage() {
               </div>
 
               <button
-                disabled={items.length === 0}
-                onClick={() => navigate("/checkout")}
+                disabled={selectedIds.length === 0}
+                onClick={() => navigate("/checkout", { state: { selectedIds } })}
                 className="mt-14 w-full rounded-md bg-black py-3 text-white hover:bg-[#b89578] transition disabled:opacity-50"
               >
                 BAYAR

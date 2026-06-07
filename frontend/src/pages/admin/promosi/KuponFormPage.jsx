@@ -1,6 +1,7 @@
 import AdminLayout from "../../../layouts/AdminLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../../services/api";
 
 export default function KuponFormPage() {
   const navigate = useNavigate();
@@ -9,59 +10,66 @@ export default function KuponFormPage() {
     kode: "",
     tanggalKadaluarsa: "",
     kuota: 0,
-    diskon: 0,
+    diskon: 0, // nominal diskon rupiah
   });
 
   const handleChange = (e) => {
+    const value = e.target.name === "kuota" || e.target.name === "diskon" 
+      ? Number(e.target.value) 
+      : e.target.value;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   };
 
   const tambahKuota = () => {
-    setFormData({
-      ...formData,
-      kuota: formData.kuota + 1,
-    });
+    setFormData((prev) => ({
+      ...prev,
+      kuota: prev.kuota + 1,
+    }));
   };
 
   const kurangKuota = () => {
-    if (formData.kuota > 0) {
-      setFormData({
-        ...formData,
-        kuota: formData.kuota - 1,
-      });
-    }
+    setFormData((prev) => ({
+      ...prev,
+      kuota: prev.kuota > 0 ? prev.kuota - 1 : 0,
+    }));
   };
 
-  const tambahDiskon = () => {
-    if (formData.diskon < 100) {
-      setFormData({
-        ...formData,
-        diskon: formData.diskon + 1,
-      });
-    }
-  };
-
-  const kurangDiskon = () => {
-    if (formData.diskon > 0) {
-      setFormData({
-        ...formData,
-        diskon: formData.diskon - 1,
-      });
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(formData);
+    if (!formData.kode.trim()) {
+      alert("Masukkan kode kupon terlebih dahulu");
+      return;
+    }
 
-    alert("Kupon berhasil disimpan");
+    if (!formData.tanggalKadaluarsa) {
+      alert("Masukkan tanggal kadaluarsa");
+      return;
+    }
 
-    navigate("/admin/promosi-kupon"); // ✅ pindah halaman
-    };
+    if (formData.diskon <= 0) {
+      alert("Nominal diskon harus lebih besar dari Rp 0");
+      return;
+    }
+
+    try {
+      await api.post("/voucher", {
+        kode_voucher: formData.kode,
+        nominal_diskon: formData.diskon,
+        kuota: formData.kuota,
+        batas_waktu: formData.tanggalKadaluarsa,
+      });
+      alert("Kupon berhasil disimpan");
+      navigate("/admin/promosi-kupon");
+    } catch (error) {
+      console.error("Gagal menambahkan kupon:", error);
+      alert(error.response?.data?.message || "Gagal menambahkan kupon");
+    }
+  };
 
   return (
     <AdminLayout>
@@ -99,7 +107,7 @@ export default function KuponFormPage() {
         {/* Form */}
         <div className="max-w-4xl">
           <div className="grid grid-cols-[250px_1fr] gap-y-6 items-center">
-
+            {/* KODE */}
             <label className="font-semibold">
               Kode Kupon
             </label>
@@ -109,10 +117,11 @@ export default function KuponFormPage() {
               name="kode"
               value={formData.kode}
               onChange={handleChange}
-              placeholder="Masukkan Kode Kupon ..."
-              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
+              placeholder="CONTOH: HEMAT50K"
+              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2 uppercase"
             />
 
+            {/* EXPIRY */}
             <label className="font-semibold">
               Masukkan Tanggal Kadaluarsa
             </label>
@@ -125,58 +134,53 @@ export default function KuponFormPage() {
               className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
             />
 
+            {/* KUOTA */}
             <label className="font-semibold">
               Masukkan Kuota
             </label>
 
-            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden">
-              <button
-                type="button"
-                onClick={tambahKuota}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                +
-              </button>
-
-              <div className="flex-1 text-center">
-                {formData.kuota}
-              </div>
-
+            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden w-64 justify-between">
               <button
                 type="button"
                 onClick={kurangKuota}
-                className="px-4 py-2 text-xl font-bold"
+                className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
               >
                 -
               </button>
-            </div>
 
-            <label className="font-semibold">
-              Masukkan Presentase Diskon
-            </label>
+              <input
+                type="number"
+                name="kuota"
+                value={formData.kuota}
+                onChange={handleChange}
+                className="flex-1 text-center bg-transparent border-none outline-none font-bold"
+              />
 
-            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden">
               <button
                 type="button"
-                onClick={tambahDiskon}
-                className="px-4 py-2 text-xl font-bold"
+                onClick={tambahKuota}
+                className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
               >
                 +
               </button>
-
-              <div className="flex-1 text-center">
-                {formData.diskon}%
-              </div>
-
-              <button
-                type="button"
-                onClick={kurangDiskon}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                -
-              </button>
             </div>
 
+            {/* NOMINAL DISKON */}
+            <label className="font-semibold">
+              Masukkan Potongan Nominal (Rupiah)
+            </label>
+
+            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden w-64">
+              <span className="pl-4 font-bold text-gray-500">Rp</span>
+              <input
+                type="number"
+                name="diskon"
+                value={formData.diskon}
+                onChange={handleChange}
+                placeholder="0"
+                className="flex-1 px-3 py-2 bg-transparent outline-none font-bold"
+              />
+            </div>
           </div>
         </div>
       </div>

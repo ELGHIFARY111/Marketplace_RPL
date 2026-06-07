@@ -12,6 +12,9 @@ router.put("/admin/update-status", verifyAdmin, pesananController.updateStatusPe
 
 // Customer routes
 router.get("/riwayat", authenticateToken, pesananController.getRiwayatPesanan);
+router.get("/ulasan/:id", authenticateToken, pesananController.getUlasanByPesanan);  // cek ulasan per pesanan
+router.put("/konfirmasi-selesai/:id", authenticateToken, pesananController.konfirmasiSelesai);
+router.post("/ulasan", authenticateToken, pesananController.submitUlasan);
 router.get("/:id", authenticateToken, pesananController.getDetailPesanan);
 
-module.exports = router;
+module.exports = router;

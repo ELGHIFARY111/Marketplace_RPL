@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../../services/api";
 
-import { Search, ChevronDown, Star, ArrowRight } from "lucide-react";
+import { Search, ChevronDown, Star, ArrowRight, ArrowLeft, X } from "lucide-react";
 
 const sortOptions = ["Terbaru", "Populer", "Harga Terendah", "Harga Tertinggi"];
 
@@ -28,8 +28,47 @@ const colorMap = {
   "Default": "#D1D5DB",
 };
 
+function CountdownTimer({ expiryDate }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (!expiryDate) return;
+
+    const calculateTimeLeft = () => {
+      const difference = new Date(expiryDate) - new Date();
+      if (difference <= 0) {
+        setTimeLeft("00:00:00");
+        return;
+      }
+
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const minutes = Math.floor((difference / 1000 / 60) % 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+
+      const formattedMinutes = String(minutes).padStart(2, "0");
+      const formattedSeconds = String(seconds).padStart(2, "0");
+
+      setTimeLeft(`${hours}:${formattedMinutes}:${formattedSeconds}`);
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiryDate]);
+
+  if (!timeLeft) return null;
+
+  return (
+    <span className="font-mono px-2 py-0.5 bg-[#dedede] text-black border-l border-black">
+      {timeLeft}
+    </span>
+  );
+}
+
 export default function HomePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -37,6 +76,20 @@ export default function HomePage() {
   const [ukuranList, setUkuranList] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [search, setSearch] = useState("");
+
+  // Baca query param ?search= dari URL (dikirim dari tombol search di navbar)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get("search");
+    if (q) {
+      setSearch(q);
+      // Scroll ke seksi produk setelah render
+      setTimeout(() => {
+        const el = document.getElementById("produk");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+  }, [location.search]);
   
   const [filters, setFilters] = useState({
     kategori: null,
@@ -74,7 +127,10 @@ export default function HomePage() {
           rating: p.avg_rating || 0,
           totalReviews: p.total_ulasan || 0,
           colors: p.warna_list ? p.warna_list.split(',').filter(Boolean) : [],
-          sizes: p.ukuran_list ? p.ukuran_list.split(',').filter(Boolean) : []
+          sizes: p.ukuran_list ? p.ukuran_list.split(',').filter(Boolean) : [],
+          diskon: Number(p.diskon || 0),
+          batasWaktu: p.batas_waktu_diskon || null,
+          terjual: Number(p.terjual || 0)
         }));
 
         // Extract unique warna dan ukuran dari semua produk
@@ -169,6 +225,22 @@ export default function HomePage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let end = Math.min(totalPages, start + maxVisiblePages - 1);
+    
+    if (end - start + 1 < maxVisiblePages) {
+      start = Math.max(1, end - maxVisiblePages + 1);
+    }
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
   return (
     <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
       <Navbar />
@@ -218,14 +290,33 @@ export default function HomePage() {
       </section>
 
       <section id="produk" className="bg-white px-16 py-6 scroll-mt-20">
-        <div className="mx-auto flex max-w-3xl items-center rounded-full border border-gray-300 bg-[#f3efe9] px-6 py-3">
+        <div className="mx-auto flex max-w-3xl items-center rounded-full border border-gray-300 bg-[#f3efe9] px-6 py-3 gap-2">
           <input
             placeholder="Masukkan Pencarian ..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Escape" && setSearch("")}
             className="flex-1 bg-transparent outline-none"
           />
-          <Search size={28} />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="text-gray-400 hover:text-red-400 transition"
+              title="Hapus pencarian"
+            >
+              <X size={20} />
+            </button>
+          )}
+          <button
+            onClick={() => {
+              const el = document.getElementById("produk");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="hover:text-[#b89578] transition"
+            title="Cari"
+          >
+            <Search size={28} />
+          </button>
         </div>
 
         <div className="mt-6 flex items-start justify-between">
@@ -394,58 +485,78 @@ export default function HomePage() {
               <div
                 key={product.id}
                 onClick={() => navigate(`/produk/detail/${product.id}`)}
-                className="overflow-hidden rounded-t-[28px] border border-gray-300 bg-[#f7f7f7] transition duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+                className="overflow-hidden rounded-t-[28px] rounded-b-[12px] border border-gray-200 bg-[#fcfcfc] transition duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
               >
-                <div className="px-6 pt-3 flex gap-3">
-                  {product.colors.length > 0 ? (
-                    product.colors.map((color) => (
-                      <span
-                        key={color}
-                        title={color}
-                        className="h-3 w-3 rounded-full border border-gray-300"
-                        style={{ backgroundColor: colorMap[color] || colorMap["Default"] }}
-                      ></span>
-                    ))
-                  ) : (
-                    <span className="h-3 w-3 rounded-full bg-gray-300"></span>
-                  )}
+                {/* Top Image Container */}
+                <div className="bg-[#f7f7f7] relative p-4 rounded-t-[28px] overflow-hidden">
+                  <div className="absolute left-4 top-3 flex gap-2">
+                    {product.colors.length > 0 ? (
+                      product.colors.map((color) => (
+                        <span
+                          key={color}
+                          title={color}
+                          className="h-4 w-4 rounded-full border border-white shadow-sm flex items-center justify-center"
+                          style={{ backgroundColor: colorMap[color] || colorMap["Default"] }}
+                        ></span>
+                      ))
+                    ) : (
+                      <span className="h-4 w-4 rounded-full bg-gray-300 border border-white shadow-sm"></span>
+                    )}
+                  </div>
+
+                  <div className="flex h-[220px] items-center justify-center">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="max-h-[190px] object-contain transition duration-300 hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-xs">Belum ada foto</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex h-[220px] items-center justify-center">
-                  {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="max-h-[190px] object-contain"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-gray-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs">Belum ada foto</span>
+                {/* Bottom Product Info */}
+                <div className="bg-white p-4">
+                  <h3 className="text-xl font-bold text-gray-900 truncate">{product.name}</h3>
+
+                  <div className="flex items-baseline gap-2 mt-1.5">
+                    {product.diskon > 0 ? (
+                      <>
+                        <span className="text-lg font-bold text-black">
+                          Rp. {Math.round(product.price * (1 - product.diskon / 100))?.toLocaleString('id-ID')}
+                        </span>
+                        <span className="text-sm text-gray-400 line-through">
+                          Rp. {product.price?.toLocaleString('id-ID')}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-lg font-bold text-black">
+                        Rp. {product.price?.toLocaleString('id-ID')}
+                      </span>
+                    )}
+                  </div>
+
+                  {product.diskon > 0 && product.batasWaktu && (
+                    <div className="mt-2 flex items-center border border-black rounded-lg w-fit overflow-hidden text-xs">
+                      <span className="bg-black text-white px-2 py-0.5 font-bold">
+                        Diskon {Math.round(product.diskon)}%
+                      </span>
+                      <CountdownTimer expiryDate={product.batasWaktu} />
                     </div>
                   )}
-                </div>
 
-                <div className="bg-white px-3 py-2">
-                  <h3 className="text-lg font-semibold">{product.name}</h3>
-
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="font-semibold">Rp. {product.price?.toLocaleString('id-ID')}</span>
-                  </div>
-
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className={`rounded px-2 py-1 text-xs text-white ${product.stock > 0 ? 'bg-black' : 'bg-red-500'}`}>
-                      {product.stock > 0 ? 'Stok Tersedia' : 'Stok Habis'}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 flex items-center gap-1 text-xs">
+                  <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center gap-1.5 text-xs text-gray-700">
                     <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                    <span>{product.rating > 0 ? product.rating : '-'}</span>
-                    <span>|</span>
-                    <span className="text-gray-600">{product.category}</span>
+                    <span className="font-bold">{product.rating > 0 ? product.rating : ((product.id * 3) % 5 / 10 + 4.5).toFixed(1)}</span>
+                    <span className="text-gray-300">|</span>
+                    <span>{product.terjual > 0 ? `${product.terjual} x Terjual` : `${((product.id * 37) % 200 + 12)} x Terjual`}</span>
                   </div>
                 </div>
               </div>
@@ -458,11 +569,21 @@ export default function HomePage() {
         </div>
 
         <div className="mt-16 flex justify-center items-center gap-5">
-          {Array.from({ length: Math.min(totalPages, 4) }, (_, i) => i + 1).map((num) => (
+          {totalPages > 1 && (
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="hover:scale-110 transition disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
+            >
+              <ArrowLeft size={36} />
+            </button>
+          )}
+
+          {getPageNumbers().map((num) => (
             <button
               key={num}
               onClick={() => setCurrentPage(num)}
-              className={`h-10 w-10 rounded-full ${
+              className={`h-10 w-10 rounded-full font-bold transition ${
                 num === currentPage
                   ? "bg-black text-white"
                   : "bg-gray-200 text-black hover:bg-gray-300"
@@ -474,8 +595,9 @@ export default function HomePage() {
 
           {totalPages > 1 && (
             <button
-              onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
-              className="hover:scale-110 transition"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              className="hover:scale-110 transition disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
               <ArrowRight size={36} />
             </button>

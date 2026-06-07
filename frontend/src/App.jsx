@@ -36,6 +36,8 @@ import PesananDetailAdminPage from "./pages/admin/pesanan/PesananDetailAdminPage
 import AkunAksesPage from "./pages/admin/akun-akses/AkunAksesPage";
 import AkunFormPage from "./pages/admin/akun-akses/AkunFormPage";
 import AkunEditPage from "./pages/admin/akun-akses/AkunEditPage";
+import PesanCSListPage from "./pages/admin/cs/PesanCSListPage";
+import PesanCSDetailPage from "./pages/admin/cs/PesanCSDetailPage";
 
 {/* Route Guards */}
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -86,7 +88,8 @@ export default function App() {
         <Route path="/admin/akun-akses" element={<AkunAksesPage />} />
         <Route path="/admin/akun-akses/tambah" element={<AkunFormPage />} />
         <Route path="/admin/akun-akses/edit/:id" element={<AkunEditPage />} />
-        <Route path="/admin/cs" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+        <Route path="/admin/cs" element={<AdminRoute><PesanCSListPage /></AdminRoute>} />
+        <Route path="/admin/cs/detail/:id" element={<AdminRoute><PesanCSDetailPage /></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   );

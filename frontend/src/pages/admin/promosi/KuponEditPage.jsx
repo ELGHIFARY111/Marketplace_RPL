@@ -1,10 +1,12 @@
 import AdminLayout from "../../../layouts/AdminLayout";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../../../services/api";
 
 export default function KuponEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -14,69 +16,92 @@ export default function KuponEditPage() {
     diskon: 0,
   });
 
-  // 🔥 SIMULASI AMBIL DATA (NANTI GANTI API)
   useEffect(() => {
-    const dataDummy = {
-      id: id,
-      kode: "disk129",
-      tanggalKadaluarsa: "2026-04-22",
-      kuota: 10,
-      diskon: 40,
+    const fetchVoucher = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/voucher/${id}`);
+        const voucher = res.data?.data;
+        if (voucher) {
+          const expiryDate = voucher.batas_waktu 
+            ? new Date(voucher.batas_waktu).toISOString().split("T")[0] 
+            : "";
+          setFormData({
+            id: voucher.id_voucher || id,
+            kode: voucher.kode_voucher || "",
+            tanggalKadaluarsa: expiryDate,
+            kuota: Number(voucher.kuota) || 0,
+            diskon: Number(voucher.nominal_diskon) || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Gagal memuat kupon:", error);
+        alert("Gagal memuat data kupon");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setFormData(dataDummy);
+    fetchVoucher();
   }, [id]);
 
   const handleChange = (e) => {
+    const value = e.target.name === "kuota" || e.target.name === "diskon" 
+      ? Number(e.target.value) 
+      : e.target.value;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   };
 
   const tambahKuota = () => {
-    setFormData({
-      ...formData,
-      kuota: formData.kuota + 1,
-    });
+    setFormData((prev) => ({
+      ...prev,
+      kuota: prev.kuota + 1,
+    }));
   };
 
   const kurangKuota = () => {
-    if (formData.kuota > 0) {
-      setFormData({
-        ...formData,
-        kuota: formData.kuota - 1,
-      });
-    }
+    setFormData((prev) => ({
+      ...prev,
+      kuota: prev.kuota > 0 ? prev.kuota - 1 : 0,
+    }));
   };
 
-  const tambahDiskon = () => {
-    if (formData.diskon < 100) {
-      setFormData({
-        ...formData,
-        diskon: formData.diskon + 1,
-      });
-    }
-  };
-
-  const kurangDiskon = () => {
-    if (formData.diskon > 0) {
-      setFormData({
-        ...formData,
-        diskon: formData.diskon - 1,
-      });
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Data update:", formData);
+    if (!formData.kode.trim()) {
+      alert("Masukkan kode kupon terlebih dahulu");
+      return;
+    }
 
-    alert("Kupon berhasil diupdate");
+    if (!formData.tanggalKadaluarsa) {
+      alert("Masukkan tanggal kadaluarsa");
+      return;
+    }
 
-    navigate("/admin/promosi-kupon"); // ✅ pindah halaman
-    };
+    if (formData.diskon <= 0) {
+      alert("Nominal diskon harus lebih besar dari Rp 0");
+      return;
+    }
+
+    try {
+      await api.put(`/voucher/${id}`, {
+        kode_voucher: formData.kode,
+        nominal_diskon: formData.diskon,
+        kuota: formData.kuota,
+        batas_waktu: formData.tanggalKadaluarsa,
+      });
+      alert("Kupon berhasil diupdate");
+      navigate("/admin/promosi-kupon");
+    } catch (error) {
+      console.error("Gagal mengupdate kupon:", error);
+      alert(error.response?.data?.message || "Gagal mengupdate kupon");
+    }
+  };
 
   return (
     <AdminLayout>
@@ -113,101 +138,97 @@ export default function KuponEditPage() {
 
         {/* FORM */}
         <div className="max-w-4xl">
-          <div className="grid grid-cols-[250px_1fr] gap-y-6 items-center">
+          {loading ? (
+            <p className="text-gray-500">Memuat data...</p>
+          ) : (
+            <div className="grid grid-cols-[250px_1fr] gap-y-6 items-center">
+              {/* ID */}
+              <label className="font-semibold">
+                ID Kupon
+              </label>
 
-            {/* ID */}
-            <label className="font-semibold">
-              ID Kupon
-            </label>
+              <input
+                type="text"
+                value={formData.id}
+                disabled
+                className="bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 opacity-60"
+              />
 
-            <input
-              type="text"
-              value={formData.id}
-              readOnly
-              className="bg-gray-200 border border-gray-300 rounded-lg px-4 py-2"
-            />
+              {/* KODE */}
+              <label className="font-semibold">
+                Kode Kupon
+              </label>
 
-            {/* KODE */}
-            <label className="font-semibold">
-              Kode Kupon
-            </label>
+              <input
+                type="text"
+                name="kode"
+                value={formData.kode}
+                onChange={handleChange}
+                className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2 uppercase"
+              />
 
-            <input
-              type="text"
-              name="kode"
-              value={formData.kode}
-              onChange={handleChange}
-              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
-            />
+              {/* TANGGAL */}
+              <label className="font-semibold">
+                Masukkan Tanggal Kadaluarsa
+              </label>
 
-            {/* TANGGAL */}
-            <label className="font-semibold">
-              Masukkan Tanggal Kadaluarsa
-            </label>
+              <input
+                type="date"
+                name="tanggalKadaluarsa"
+                value={formData.tanggalKadaluarsa}
+                onChange={handleChange}
+                className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
+              />
 
-            <input
-              type="date"
-              name="tanggalKadaluarsa"
-              value={formData.tanggalKadaluarsa}
-              onChange={handleChange}
-              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
-            />
+              {/* KUOTA */}
+              <label className="font-semibold">
+                Masukkan Kuota
+              </label>
 
-            {/* KUOTA */}
-            <label className="font-semibold">
-              Masukkan Kuota
-            </label>
+              <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden w-64 justify-between">
+                <button
+                  type="button"
+                  onClick={kurangKuota}
+                  className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
+                >
+                  -
+                </button>
 
-            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden">
-              <button
-                type="button"
-                onClick={tambahKuota}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                +
-              </button>
+                <input
+                  type="number"
+                  name="kuota"
+                  value={formData.kuota}
+                  onChange={handleChange}
+                  className="flex-1 text-center bg-transparent border-none outline-none font-bold"
+                />
 
-              <div className="flex-1 text-center">
-                {formData.kuota}
+                <button
+                  type="button"
+                  onClick={tambahKuota}
+                  className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
+                >
+                  +
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={kurangKuota}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                -
-              </button>
-            </div>
+              {/* NOMINAL DISKON */}
+              <label className="font-semibold">
+                Masukkan Potongan Nominal (Rupiah)
+              </label>
 
-            {/* DISKON */}
-            <label className="font-semibold">
-              Masukkan Presentase Diskon
-            </label>
-
-            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden">
-              <button
-                type="button"
-                onClick={tambahDiskon}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                +
-              </button>
-
-              <div className="flex-1 text-center">
-                {formData.diskon}%
+              <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden w-64">
+                <span className="pl-4 font-bold text-gray-500">Rp</span>
+                <input
+                  type="number"
+                  name="diskon"
+                  value={formData.diskon}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className="flex-1 px-3 py-2 bg-transparent outline-none font-bold"
+                />
               </div>
-
-              <button
-                type="button"
-                onClick={kurangDiskon}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                -
-              </button>
             </div>
-
-          </div>
+          )}
         </div>
       </div>
     </AdminLayout>

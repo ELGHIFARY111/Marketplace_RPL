@@ -24,20 +24,23 @@ const STATUS_COLORS = {
   dibayar: "bg-blue-500",
   diproses: "bg-purple-500",
   dikirim: "bg-blue-400",
+  terkirim: "bg-teal-500",
   selesai: "bg-green-500",
   dibatalkan: "bg-red-700",
   pending_payment: "bg-yellow-500",
   gagal: "bg-red-900",
 };
 
+
+// Admin hanya bisa ubah sampai terkirim — selesai hanya bisa oleh customer
 const STATUS_OPTIONS = [
   { value: "diproses", label: "Diproses", color: "bg-purple-500" },
   { value: "dikirim", label: "Dikirim", color: "bg-blue-400" },
+  { value: "terkirim", label: "Terkirim", color: "bg-teal-500" },
   { value: "dibatalkan", label: "Dibatalkan", color: "bg-red-700" },
-  { value: "pending_payment", label: "Pembayaran", color: "bg-yellow-500" },
-  { value: "selesai", label: "Selesai", color: "bg-green-500" },
   { value: "hapus", label: "Hapus", color: "bg-black" },
 ];
+
 
 export default function PesananListPage() {
   const navigate = useNavigate();
@@ -227,61 +230,61 @@ export default function PesananListPage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="p-6 text-center text-gray-500">Memuat data...</td>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="p-6 text-center text-gray-500">Memuat data...</td>
+              </tr>
+            ) : sortedPesanan.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="p-6 text-center text-gray-500">Tidak ada pesanan</td>
+              </tr>
+            ) : (
+              sortedPesanan.map((p) => (
+                <tr key={p.id_pesanan} className="hover:bg-gray-50 text-center">
+                  <td className="p-3 border">{p.id_pesanan}</td>
+                  <td className="p-3 border">{p.nama_customer || "-"}</td>
+                  <td className="p-3 border">{formatTanggal(p.tgl_pesan)}</td>
+                  <td className="p-3 border">{formatRupiah(p.total_tagihan)}</td>
+                  <td className="p-3 border">
+                    <span className={`status-box text-white text-xs px-3 py-1 rounded-[10px] ${STATUS_COLORS[p.status_pesanan] || "bg-gray-400"}`}>
+                      {p.status_pesanan || "-"}
+                    </span>
+                  </td>
+                  <td className="p-3 border">
+                    {modeUpdate ? (
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(p.id_pesanan)}
+                        onChange={() => toggleSelect(p.id_pesanan)}
+                        className="w-4 h-4"
+                      />
+                    ) : (
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => navigate(`/admin/pesanan/detail/${p.id_pesanan}`)}
+                          className="tombol-edit"
+                        >
+                          Detail
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedIds([p.id_pesanan]);
+                            setModeUpdate(false);
+                            setShowModal(true);
+                          }}
+                          className="tombol-hapus"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                  </td>
                 </tr>
-              ) : sortedPesanan.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="p-6 text-center text-gray-500">Tidak ada pesanan</td>
-                </tr>
-              ) : (
-                sortedPesanan.map((p) => (
-                  <tr key={p.id_pesanan} className="hover:bg-gray-50 text-center">
-                    <td className="p-3 border">{p.id_pesanan}</td>
-                    <td className="p-3 border">{p.nama_customer || "-"}</td>
-                    <td className="p-3 border">{formatTanggal(p.tgl_pesan)}</td>
-                    <td className="p-3 border">{formatRupiah(p.total_tagihan)}</td>
-                    <td className="p-3 border">
-                      <span className={`status-box text-white text-xs px-3 py-1 rounded-[10px] ${STATUS_COLORS[p.status_pesanan] || "bg-gray-400"}`}>
-                        {p.status_pesanan || "-"}
-                      </span>
-                    </td>
-                    <td className="p-3 border">
-                      {modeUpdate ? (
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(p.id_pesanan)}
-                          onChange={() => toggleSelect(p.id_pesanan)}
-                          className="w-4 h-4"
-                        />
-                      ) : (
-                        <div className="flex justify-center gap-2">
-                          <button
-                            onClick={() => navigate(`/admin/pesanan/detail/${p.id_pesanan}`)}
-                            className="tombol-edit"
-                          >
-                            Detail
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedIds([p.id_pesanan]);
-                              setModeUpdate(false);
-                              setShowModal(true);
-                            }}
-                            className="tombol-hapus"
-                          >
-                            Hapus
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+              ))
+            )}
+          </tbody>
+        </table>
         </div>
       </div>
 

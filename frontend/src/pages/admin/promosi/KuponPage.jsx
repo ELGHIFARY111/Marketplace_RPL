@@ -1,57 +1,98 @@
 import AdminLayout from "../../../layouts/AdminLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
+import api from "../../../services/api";
+
+// Komponen header kolom sortable
+function SortableTh({ label, sortKey, currentSort, currentDir, onSort, className = "" }) {
+  const active = currentSort === sortKey;
+  const isLeft = className.includes("text-left");
+  return (
+    <th
+      onClick={() => onSort(sortKey)}
+      className={`cursor-pointer select-none hover:bg-primary-200 transition p-3 border-b-2 border-[#D9D9D9] ${className}`}
+    >
+      <span className={`flex items-center gap-1 ${isLeft ? "justify-start" : "justify-center"}`}>
+        {label}
+        <span className="text-xs text-gray-400">
+          {active ? (currentDir === "asc" ? "▲" : "▼") : "⇅"}
+        </span>
+      </span>
+    </th>
+  );
+}
 
 export default function KuponPage() {
   const [search, setSearch] = useState("");
+  const [vouchers, setVouchers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const kuponData = [
-    {
-      id: 1,
-      kode: "DISK1029",
-      batasWaktu: "22-Apr-2026",
-      kuota: 100,
-      diskon: "40%",
-    },
-    {
-      id: 2,
-      kode: "DISK2045",
-      batasWaktu: "15-Mei-2026",
-      kuota: 50,
-      diskon: "25%",
-    },
-    {
-      id: 3,
-      kode: "HEMAT50",
-      batasWaktu: "10-Jun-2026",
-      kuota: 200,
-      diskon: "50%",
-    },
-    {
-      id: 4,
-      kode: "ZENVY10",
-      batasWaktu: "01-Jul-2026",
-      kuota: 500,
-      diskon: "10%",
-    },
-  ];
+  const [sortKey, setSortKey] = useState("id_voucher");
+  const [sortDir, setSortDir] = useState("asc");
 
-  const filteredKupon = kuponData.filter(
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const fetchVouchers = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/voucher");
+      setVouchers(res.data?.data || []);
+    } catch (error) {
+      console.error("Gagal memuat data voucher:", error);
+      alert("Gagal memuat data voucher");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVouchers();
+  }, []);
+
+  const filteredKupon = vouchers.filter(
     (item) =>
-      item.kode.toLowerCase().includes(search.toLowerCase()) ||
-      item.id.toString().includes(search)
+      item.kode_voucher?.toLowerCase().includes(search.toLowerCase()) ||
+      item.id_voucher?.toString().includes(search)
   );
 
   const handleEdit = (id) => {
     navigate(`/admin/promosi-kupon/edit/${id}`);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!confirm("Yakin ingin menghapus kupon ini?")) return;
 
-    console.log("Delete kupon:", id);
+    try {
+      await api.delete(`/voucher/${id}`);
+      alert("Kupon berhasil dihapus");
+      fetchVouchers();
+    } catch (error) {
+      console.error("Gagal menghapus kupon:", error);
+      alert(error.response?.data?.message || "Gagal menghapus kupon");
+    }
+  };
+
+  const formatRupiah = (angka) => {
+    return `Rp ${Number(angka || 0).toLocaleString("id-ID")}`;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   return (
@@ -93,29 +134,17 @@ export default function KuponPage() {
         {/* Table */}
         <div className="rounded-[15px] overflow-hidden border-2 border-[#D9D9D9]">
           <div className="max-h-[40rem] overflow-y-auto">
-            <table className="w-full border-collapse">
-              <thead className="bg-primary-100 sticky top-0 z-10 border-b-2 border-[#D9D9D9]">
+            {loading ? (
+              <p className="text-center py-6 text-gray-500">Memuat data...</p>
+            ) : (
+              <table className="w-full border-collapse">
+                <thead className="bg-primary-100 sticky top-0 z-10 border-b-2 border-[#D9D9D9]">
                 <tr>
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    ID
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-left">
-                    Kode Kupon
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    Batas Waktu
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    Kuota
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    Diskon
-                  </th>
-
+                  <SortableTh label="ID" sortKey="id_voucher" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
+                  <SortableTh label="Kode Kupon" sortKey="kode_voucher" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-left" />
+                  <SortableTh label="Batas Waktu" sortKey="batas_waktu" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
+                  <SortableTh label="Kuota" sortKey="kuota" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
+                  <SortableTh label="Potongan Harga" sortKey="nominal_diskon" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
                   <th className="p-3 text-center">
                     Aksi
                   </th>
@@ -123,43 +152,50 @@ export default function KuponPage() {
               </thead>
 
               <tbody>
-                {filteredKupon.map((kupon) => (
+                {[...filteredKupon].sort((a, b) => {
+                  const valA = a[sortKey] ?? "";
+                  const valB = b[sortKey] ?? "";
+                  const cmp = typeof valA === "number" || sortKey === "id_voucher" || sortKey === "kuota" || sortKey === "nominal_diskon"
+                    ? Number(valA) - Number(valB)
+                    : String(valA).localeCompare(String(valB), "id");
+                  return sortDir === "asc" ? cmp : -cmp;
+                }).map((kupon) => (
                   <tr
-                    key={kupon.id}
+                    key={kupon.id_voucher}
                     className="hover:bg-gray-50"
                   >
                     <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {kupon.id}
+                      {kupon.id_voucher}
                     </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3">
-                      {kupon.kode}
+                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 font-semibold text-blue-600">
+                      {kupon.kode_voucher}
                     </td>
 
                     <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {kupon.batasWaktu}
+                      {formatDate(kupon.batas_waktu)}
                     </td>
 
                     <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
                       {kupon.kuota}
                     </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {kupon.diskon}
+                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center font-bold text-green-600">
+                      {formatRupiah(kupon.nominal_diskon)}
                     </td>
 
                     <td className="border-b-2 border-[#D9D9D9] p-3">
                       <div className="flex justify-center gap-2">
                         <button
                           className="tombol-edit"
-                          onClick={() => handleEdit(kupon.id)}
+                          onClick={() => handleEdit(kupon.id_voucher)}
                         >
                           Edit
                         </button>
 
                         <button
                           className="tombol-hapus"
-                          onClick={() => handleDelete(kupon.id)}
+                          onClick={() => handleDelete(kupon.id_voucher)}
                         >
                           Delete
                         </button>
@@ -180,6 +216,7 @@ export default function KuponPage() {
                 )}
               </tbody>
             </table>
+            )}
           </div>
         </div>
       </div>

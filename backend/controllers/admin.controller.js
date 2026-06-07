@@ -114,7 +114,7 @@ const getDashboardStats = async (req, res) => {
 
     // 8. Best Selling Products
     const [bestSellingRows] = await db.query(
-      `SELECT p.nama_produk AS name, SUM(dp.jumlah) AS sold
+      `SELECT p.nama_produk AS name, SUM(dp.qty) AS sold
        FROM detail_pesanan dp
        JOIN varian_produk vp ON dp.id_varian = vp.id_varian
        JOIN produk p ON vp.id_produk = p.id_produk
@@ -176,9 +176,112 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      'SELECT id_user, nama_lengkap, email, no_telp, tgl_daftar, level_akses FROM users ORDER BY id_user DESC'
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [rows] = await db.query(
+      'SELECT id_user, nama_lengkap, email, no_telp, level_akses FROM users WHERE id_user = ?',
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const createUser = async (req, res) => {
+  try {
+    const { nama, email, telpon, level, password } = req.body;
+    if (!nama || !email || !password || !level) {
+      return res.status(400).json({ message: 'Mohon lengkapi semua field wajib' });
+    }
+
+    const [existing] = await db.query('SELECT id_user FROM users WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Email sudah terdaftar' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const [result] = await db.query(
+      'INSERT INTO users (nama_lengkap, email, no_telp, password, level_akses) VALUES (?, ?, ?, ?, ?)',
+      [nama, email, telpon || '', hashedPassword, level]
+    );
+
+    res.status(201).json({ message: 'User berhasil dibuat', id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nama, email, telpon, level, password } = req.body;
+
+    if (!nama || !email || !level) {
+      return res.status(400).json({ message: 'Mohon lengkapi nama, email, dan level akses' });
+    }
+
+    if (password && password.trim() !== '' && !password.startsWith('***')) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      await db.query(
+        'UPDATE users SET nama_lengkap = ?, email = ?, no_telp = ?, level_akses = ?, password = ? WHERE id_user = ?',
+        [nama, email, telpon || '', level, hashedPassword, id]
+      );
+    } else {
+      await db.query(
+        'UPDATE users SET nama_lengkap = ?, email = ?, no_telp = ?, level_akses = ? WHERE id_user = ?',
+        [nama, email, telpon || '', level, id]
+      );
+    }
+
+    res.json({ message: 'User berhasil diperbarui' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const deleteUserAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (Number(id) === Number(req.adminId)) {
+      return res.status(400).json({ message: 'Anda tidak dapat menghapus akun Anda sendiri dari sini' });
+    }
+    const [result] = await db.query('DELETE FROM users WHERE id_user = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+    res.json({ message: 'User berhasil dihapus' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAdminProfile,
   updateAdminProfile,
   deleteAdmin,
-  getDashboardStats
+  getDashboardStats,
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUserAdmin
 };

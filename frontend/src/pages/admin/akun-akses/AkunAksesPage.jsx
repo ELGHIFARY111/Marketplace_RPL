@@ -1,47 +1,94 @@
 import AdminLayout from "../../../layouts/AdminLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
+import api from "../../../services/api";
+
+// Komponen header kolom sortable
+function SortableTh({ label, sortKey, currentSort, currentDir, onSort, className = "" }) {
+  const active = currentSort === sortKey;
+  const isLeft = className.includes("text-left");
+  return (
+    <th
+      onClick={() => onSort(sortKey)}
+      className={`cursor-pointer select-none hover:bg-primary-200 transition p-3 border-b-2 border-[#D9D9D9] ${className}`}
+    >
+      <span className={`flex items-center gap-1 ${isLeft ? "justify-start" : "justify-center"}`}>
+        {label}
+        <span className="text-xs text-gray-400">
+          {active ? (currentDir === "asc" ? "▲" : "▼") : "⇅"}
+        </span>
+      </span>
+    </th>
+  );
+}
 
 export default function AkunAksesPage() {
+  const [userData, setUserData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  const userData = [
-    {
-      id: 1,
-      nama: "Adit sopo",
-      email: "Adit@gmail.com",
-      password: "********",
-      telp: "0800001001",
-      tanggal: "10-Mei-2023",
-      level: "Admin",
-    },
-    {
-      id: 2,
-      nama: "Adit sopo",
-      email: "Adit@gmail.com",
-      password: "********",
-      telp: "0800001001",
-      tanggal: "10-Mei-2023",
-      level: "Admin",
-    },
-  ];
+  const [sortKey, setSortKey] = useState("id_user");
+  const [sortDir, setSortDir] = useState("asc");
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get("/admin/users");
+      setUserData(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Gagal mengambil data user:", error);
+      alert("Gagal memuat data akun");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filteredUser = userData.filter(
     (item) =>
-      item.nama.toLowerCase().includes(search.toLowerCase()) ||
-      item.id.toString().includes(search)
+      (item.nama_lengkap || "").toLowerCase().includes(search.toLowerCase()) ||
+      (item.email || "").toLowerCase().includes(search.toLowerCase()) ||
+      item.id_user.toString().includes(search)
   );
 
   const handleEdit = (id) => {
     navigate(`/admin/akun-akses/edit/${id}`);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!confirm("Yakin ingin menghapus akun ini?")) return;
 
-    console.log("Delete user:", id);
+    try {
+      await api.delete(`/admin/users/${id}`);
+      alert("Akun berhasil dihapus");
+      fetchUsers();
+    } catch (error) {
+      console.error("Gagal menghapus user:", error);
+      alert(error.response?.data?.message || "Gagal menghapus akun");
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
   return (
@@ -87,110 +134,104 @@ export default function AkunAksesPage() {
             <table className="w-full border-collapse">
 
               <thead className="bg-primary-100 sticky top-0 z-10 border-b-2 border-[#D9D9D9]">
+              <tr>
+                <SortableTh label="ID" sortKey="id_user" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
+                <SortableTh label="Nama Lengkap" sortKey="nama_lengkap" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-left" />
+                <SortableTh label="Email" sortKey="email" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-left" />
+                <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
+                  Password
+                </th>
+                <SortableTh label="No. telp" sortKey="no_telp" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
+                <SortableTh label="Tanggal daftar" sortKey="tgl_daftar" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
+                <SortableTh label="Level akses" sortKey="level_akses" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} className="border-r-2 border-[#D9D9D9] text-center" />
+                <th className="p-3 text-center">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading ? (
                 <tr>
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    ID
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-left">
-                    Nama Lengkap
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-left">
-                    Email
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    Password
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    No. telp
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    Tanggal daftar
-                  </th>
-
-                  <th className="border-r-2 border-[#D9D9D9] p-3 text-center">
-                    Level akses
-                  </th>
-
-                  <th className="p-3 text-center">
-                    Aksi
-                  </th>
+                  <td colSpan="8" className="text-center py-6 text-gray-500">
+                    Sedang memuat data akun...
+                  </td>
                 </tr>
-              </thead>
+              ) : [...filteredUser].sort((a, b) => {
+                const valA = a[sortKey] ?? "";
+                const valB = b[sortKey] ?? "";
+                const cmp = typeof valA === "number" || sortKey === "id_user"
+                  ? Number(valA) - Number(valB)
+                  : String(valA).localeCompare(String(valB), "id");
+                return sortDir === "asc" ? cmp : -cmp;
+              }).map((user) => (
+                <tr key={user.id_user} className="hover:bg-gray-50">
 
-              <tbody>
-                {filteredUser.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
+                    {user.id_user}
+                  </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {user.id}
-                    </td>
+                  <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3">
+                    {user.nama_lengkap}
+                  </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3">
-                      {user.nama}
-                    </td>
+                  <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3">
+                    {user.email}
+                  </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3">
-                      {user.email}
-                    </td>
+                  <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
+                    ********
+                  </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {user.password}
-                    </td>
+                  <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
+                    {user.no_telp || "-"}
+                  </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {user.telp}
-                    </td>
+                  <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
+                    {formatDate(user.tgl_daftar)}
+                  </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {user.tanggal}
-                    </td>
+                  <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center capitalize">
+                    {user.level_akses}
+                  </td>
 
-                    <td className="border-r-2 border-b-2 border-[#D9D9D9] p-3 text-center">
-                      {user.level}
-                    </td>
+                  <td className="border-b-2 border-[#D9D9D9] p-3">
+                    <div className="flex justify-center gap-2">
 
-                    <td className="border-b-2 border-[#D9D9D9] p-3">
-                      <div className="flex justify-center gap-2">
+                      <button
+                        className="tombol-edit"
+                        onClick={() => handleEdit(user.id_user)}
+                      >
+                        Edit
+                      </button>
 
-                        <button
-                          className="tombol-edit"
-                          onClick={() => handleEdit(user.id)}
-                        >
-                          Edit
-                        </button>
+                      <button
+                        className="tombol-hapus"
+                        onClick={() => handleDelete(user.id_user)}
+                      >
+                        Hapus
+                      </button>
 
-                        <button
-                          className="tombol-hapus"
-                          onClick={() => handleDelete(user.id)}
-                        >
-                          Hapus
-                        </button>
+                    </div>
+                  </td>
 
-                      </div>
-                    </td>
+                </tr>
+              ))}
 
-                  </tr>
-                ))}
+              {!loading && filteredUser.length === 0 && (
+                <tr>
+                  <td
+                    colSpan="8"
+                    className="text-center py-6 text-gray-500"
+                  >
+                    Data akun tidak ditemukan
+                  </td>
+                </tr>
+              )}
 
-                {filteredUser.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan="8"
-                      className="text-center py-6 text-gray-500"
-                    >
-                      Data akun tidak ditemukan
-                    </td>
-                  </tr>
-                )}
+            </tbody>
 
-              </tbody>
-
-            </table>
+          </table>
           </div>
         </div>
 

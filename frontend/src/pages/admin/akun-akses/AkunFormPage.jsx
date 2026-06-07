@@ -1,6 +1,7 @@
 import AdminLayout from "../../../layouts/AdminLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../../services/api";
 
 export default function AkunFormPage() {
   const navigate = useNavigate();
@@ -20,13 +21,22 @@ export default function AkunFormPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(formData);
-    alert("Akun berhasil disimpan");
+    if (!formData.nama || !formData.email || !formData.level || !formData.password) {
+      alert("Mohon isi semua data yang wajib!");
+      return;
+    }
 
-    navigate("/admin/akun-akses");
+    try {
+      await api.post("/admin/users", formData);
+      alert("Akun berhasil disimpan");
+      navigate("/admin/akun-akses");
+    } catch (error) {
+      console.error("Gagal menyimpan akun:", error);
+      alert(error.response?.data?.message || "Gagal menyimpan akun");
+    }
   };
 
   return (
@@ -50,7 +60,7 @@ export default function AkunFormPage() {
         {/* TOMBOL */}
         <div className="flex justify-end gap-2 mb-8">
           <button
-            onClick={() => navigate("/admin/akun")}
+            onClick={() => navigate("/admin/akun-akses")}
             className="px-8 py-2 rounded-md bg-gray-400 text-white font-semibold"
           >
             Batal
@@ -119,7 +129,7 @@ export default function AkunFormPage() {
             >
               <option value="">Pilih Level Akses ...</option>
               <option value="admin">Admin</option>
-              <option value="staff">Staff</option>
+              <option value="customer">Customer</option>
             </select>
 
             {/* Password */}

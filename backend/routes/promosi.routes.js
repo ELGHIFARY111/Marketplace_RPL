@@ -10,5 +10,6 @@ router.get('/:id', promiController.getPromoById);
 // Protected routes
 router.post('/', authenticateToken, promiController.createPromo);
 router.put('/:id', authenticateToken, promiController.updatePromo);
+router.delete('/:id', authenticateToken, promiController.deletePromo);
 
 module.exports = router;

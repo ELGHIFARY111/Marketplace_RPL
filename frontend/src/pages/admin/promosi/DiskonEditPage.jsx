@@ -1,18 +1,51 @@
 import AdminLayout from "../../../layouts/AdminLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../../../services/api";
 
 export default function DiskonEditPage() {
   const navigate = useNavigate();
-  const { id } = useParams(); // ambil id dari URL
+  const { id } = useParams();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 🔥 DATA AWAL (nanti ganti dari API / props)
   const [formData, setFormData] = useState({
-    id: id,
-    produk: "Kaos Cap 3 Kucing",
-    tanggalKadaluarsa: "2026-04-22",
-    diskon: 40,
+    produk: "",
+    tanggalKadaluarsa: "",
+    diskon: 0,
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch all products
+        const prodRes = await api.get("/produk");
+        setProducts(prodRes.data || []);
+
+        // Fetch promo details
+        const promoRes = await api.get(`/promo/${id}`);
+        const promo = promoRes.data?.data;
+        if (promo) {
+          // Format date string to YYYY-MM-DD
+          const expiryDate = promo.batas_waktu 
+            ? new Date(promo.batas_waktu).toISOString().split("T")[0] 
+            : "";
+          setFormData({
+            produk: promo.id_produk || "",
+            tanggalKadaluarsa: expiryDate,
+            diskon: Math.round(promo.persentase_diskon) || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data:", error);
+        alert("Gagal memuat data promosi");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -39,19 +72,41 @@ export default function DiskonEditPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Update Diskon:", formData);
+    if (!formData.produk) {
+      alert("Silakan pilih produk terlebih dahulu");
+      return;
+    }
 
-    alert("Diskon berhasil diupdate");
-    navigate("/admin/promosi-diskon");
+    if (!formData.tanggalKadaluarsa) {
+      alert("Silakan tentukan tanggal kadaluarsa");
+      return;
+    }
+
+    if (formData.diskon <= 0) {
+      alert("Diskon harus lebih besar dari 0%");
+      return;
+    }
+
+    try {
+      await api.put(`/promo/${id}`, {
+        id_produk: formData.produk,
+        persentase_diskon: formData.diskon,
+        batas_waktu: formData.tanggalKadaluarsa,
+      });
+      alert("Diskon berhasil diupdate");
+      navigate("/admin/promosi-diskon");
+    } catch (error) {
+      console.error("Gagal mengupdate diskon:", error);
+      alert(error.response?.data?.message || "Gagal mengupdate diskon");
+    }
   };
 
   return (
     <AdminLayout>
       <div>
-
         {/* HEADER */}
         <div className="flex items-end gap-2">
           <h1 className="text-[3rem] font-bold">
@@ -84,76 +139,83 @@ export default function DiskonEditPage() {
 
         {/* FORM */}
         <div className="max-w-4xl">
-          <div className="grid grid-cols-[250px_1fr] gap-y-6 items-center">
+          {loading ? (
+            <p className="text-gray-500">Memuat data...</p>
+          ) : (
+            <div className="grid grid-cols-[250px_1fr] gap-y-6 items-center">
+              {/* ID */}
+              <label className="font-semibold">
+                ID Diskon
+              </label>
 
-            {/* ID */}
-            <label className="font-semibold">
-              ID Produk
-            </label>
+              <input
+                type="text"
+                value={id}
+                disabled
+                className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2 opacity-60"
+              />
 
-            <input
-              type="text"
-              value={formData.id}
-              disabled
-              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
-            />
+              {/* PRODUK */}
+              <label className="font-semibold">
+                Pilih Produk
+              </label>
 
-            {/* PRODUK */}
-            <label className="font-semibold">
-              Pilih Produk
-            </label>
-
-            <input
-              type="text"
-              name="produk"
-              value={formData.produk}
-              onChange={handleChange}
-              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
-            />
-
-            {/* TANGGAL */}
-            <label className="font-semibold">
-              Masukkan Tanggal Kadaluarsa
-            </label>
-
-            <input
-              type="date"
-              name="tanggalKadaluarsa"
-              value={formData.tanggalKadaluarsa}
-              onChange={handleChange}
-              className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
-            />
-
-            {/* DISKON */}
-            <label className="font-semibold">
-              Masukkan Presentase Diskon
-            </label>
-
-            <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden">
-              <button
-                type="button"
-                onClick={tambahDiskon}
-                className="px-4 py-2 text-xl font-bold"
+              <select
+                name="produk"
+                value={formData.produk}
+                onChange={handleChange}
+                className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
               >
-                +
-              </button>
+                <option value="">-- Pilih Produk --</option>
+                {products.map((p) => (
+                  <option key={p.id_produk} value={p.id_produk}>
+                    {p.nama} (Rp {p.harga?.toLocaleString("id-ID")})
+                  </option>
+                ))}
+              </select>
 
-              <div className="flex-1 text-center">
-                {formData.diskon}%
+              {/* TANGGAL */}
+              <label className="font-semibold">
+                Masukkan Tanggal Kadaluarsa
+              </label>
+
+              <input
+                type="date"
+                name="tanggalKadaluarsa"
+                value={formData.tanggalKadaluarsa}
+                onChange={handleChange}
+                className="bg-primary-100 border border-primary-200 rounded-lg px-4 py-2"
+              />
+
+              {/* DISKON */}
+              <label className="font-semibold">
+                Masukkan Presentase Diskon
+              </label>
+
+              <div className="flex items-center bg-primary-100 border border-primary-200 rounded-lg overflow-hidden w-64 justify-between">
+                <button
+                  type="button"
+                  onClick={kurangDiskon}
+                  className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
+                >
+                  -
+                </button>
+
+                <div className="flex-1 text-center font-bold">
+                  {formData.diskon}%
+                </div>
+
+                <button
+                  type="button"
+                  onClick={tambahDiskon}
+                  className="px-4 py-2 text-xl font-bold hover:bg-gray-200"
+                >
+                  +
+                </button>
               </div>
-
-              <button
-                type="button"
-                onClick={kurangDiskon}
-                className="px-4 py-2 text-xl font-bold"
-              >
-                -
-              </button>
             </div>
-
-          </div>
+          )}
         </div>
-
       </div>
     </AdminLayout>
   );
