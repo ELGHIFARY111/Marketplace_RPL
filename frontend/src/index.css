@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes progress-bar {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+.animate-progress-bar {
+  animation: progress-bar var(--duration, 4000ms) linear forwards;
+}
+
 @layer components {
 
     .produk-table th,

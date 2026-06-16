@@ -5,10 +5,13 @@ import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 export default function EditProfilPage() {
   const navigate = useNavigate();
   const { login, user } = useContext(AuthContext);
+  const { alerts, showAlert, closeAlert } = useAlert();
   
   const [formData, setFormData] = useState({
     nama_lengkap: "",
@@ -48,7 +51,7 @@ export default function EditProfilPage() {
     setSaving(true);
     try {
       const res = await api.put('/users/profile', formData);
-      alert("Profil berhasil diperbarui");
+      showAlert("Profil berhasil diperbarui", "success");
       
       // Update local storage / context user object if necessary (name/phone changes)
       // Since context user has { id, nama, email, no_telp, level }
@@ -64,7 +67,7 @@ export default function EditProfilPage() {
       navigate("/profil");
     } catch (error) {
       const msg = error.response?.data?.message || error.response?.data?.error || "Gagal memperbarui profil";
-      alert(msg);
+      showAlert(msg, "error");
     } finally {
       setSaving(false);
     }
@@ -84,6 +87,7 @@ export default function EditProfilPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="w-full bg-[#f3efe9] min-h-screen flex flex-col">
         <Navbar />
 

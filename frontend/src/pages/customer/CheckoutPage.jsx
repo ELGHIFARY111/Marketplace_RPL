@@ -11,10 +11,13 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../services/api";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [alamatList, setAlamatList] = useState([]);
   const [selectedAlamatId, setSelectedAlamatId] = useState("");
@@ -181,7 +184,7 @@ export default function CheckoutPage() {
         setAlamatList(res.data || []);
       } catch (error) {
         console.error("Gagal memuat alamat:", error.response?.data || error);
-        alert("Gagal memuat alamat tersimpan");
+        showAlert("Gagal memuat alamat tersimpan", "error");
       } finally {
         setLoadingAlamat(false);
       }
@@ -222,7 +225,7 @@ export default function CheckoutPage() {
         }
       } catch (error) {
         console.error("Gagal memuat keranjang:", error.response?.data || error);
-        alert("Gagal memuat data keranjang");
+        showAlert("Gagal memuat data keranjang", "error");
       } finally {
         setLoadingKeranjang(false);
       }
@@ -257,12 +260,12 @@ export default function CheckoutPage() {
       if (!selectedAlamat || !selectedCourier) return;
 
       if (!selectedAlamat.destination_id) {
-        alert("Alamat ini belum punya destination ID RajaOngkir");
+        showAlert("Alamat ini belum punya destination ID RajaOngkir", "warning");
         return;
       }
 
       if (cartItems.length === 0) {
-        alert("Keranjang masih kosong");
+        showAlert("Keranjang masih kosong", "warning");
         return;
       }
 
@@ -280,7 +283,7 @@ export default function CheckoutPage() {
         setShippingOptions(response.data.data || []);
       } catch (error) {
         console.error("Gagal menghitung ongkir:", error.response?.data || error);
-        alert(error.response?.data?.message || "Gagal menghitung ongkir");
+        showAlert(error.response?.data?.message || "Gagal menghitung ongkir", "error");
       } finally {
         setLoadingOngkir(false);
       }
@@ -326,7 +329,7 @@ export default function CheckoutPage() {
 
   const handleApplyVoucher = async () => {
     if (!couponCode.trim()) {
-      alert("Masukkan kode kupon terlebih dahulu");
+      showAlert("Masukkan kode kupon terlebih dahulu", "warning");
       return;
     }
 
@@ -334,45 +337,45 @@ export default function CheckoutPage() {
       const res = await api.post("/voucher/validate", { code: couponCode });
       if (res.data?.valid) {
         setAppliedVoucher(res.data.voucher);
-        alert(`Kupon ${res.data.voucher.kode_voucher} berhasil digunakan!`);
+        showAlert(`Kupon ${res.data.voucher.kode_voucher} berhasil digunakan!`, "success");
       } else {
-        alert(res.data?.message || "Kupon tidak valid");
+        showAlert(res.data?.message || "Kupon tidak valid", "error");
       }
     } catch (error) {
       console.error("Gagal memvalidasi kupon:", error);
-      alert(error.response?.data?.message || "Kupon tidak valid");
+      showAlert(error.response?.data?.message || "Kupon tidak valid", "error");
     }
   };
 
   const handleBayar = async () => {
     try {
       if (loadingKeranjang) {
-        alert("Data keranjang masih dimuat");
+        showAlert("Data keranjang masih dimuat", "info");
         return;
       }
 
       if (cartItems.length === 0) {
-        alert("Keranjang masih kosong");
+        showAlert("Keranjang masih kosong", "warning");
         return;
       }
 
       if (!selectedAlamat) {
-        alert("Pilih alamat pengiriman dulu");
+        showAlert("Pilih alamat pengiriman dulu", "warning");
         return;
       }
 
       if (!selectedCourier) {
-        alert("Pilih jasa kirim dulu");
+        showAlert("Pilih jasa kirim dulu", "warning");
         return;
       }
 
       if (!selectedShipping) {
-        alert("Pilih layanan ongkir dulu");
+        showAlert("Pilih layanan ongkir dulu", "warning");
         return;
       }
 
       if (!selectedPayment) {
-        alert("Pilih metode pembayaran dulu");
+        showAlert("Pilih metode pembayaran dulu", "warning");
         return;
       }
 
@@ -438,7 +441,7 @@ export default function CheckoutPage() {
       });
     } catch (error) {
       console.error("Gagal bayar:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "Gagal membuat pembayaran");
+      showAlert(error.response?.data?.message || "Gagal membuat pembayaran", "error");
     } finally {
       setLoadingBayar(false);
     }
@@ -446,6 +449,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="w-full bg-[#f3efe9] min-h-screen flex flex-col">
         <Navbar />
 

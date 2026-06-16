@@ -8,13 +8,17 @@ import {
   Wallet,
   Copy,
   ExternalLink,
+  Store,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 export default function DetailPesananPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const initialPaymentData = useMemo(() => {
     if (location.state) {
@@ -178,9 +182,9 @@ export default function DetailPesananPage() {
   const copyText = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert("Berhasil disalin");
+      showAlert("Berhasil disalin", "success");
     } catch {
-      alert("Gagal menyalin");
+      showAlert("Gagal menyalin", "error");
     }
   };
   const refreshStatus = async () => {
@@ -223,6 +227,7 @@ export default function DetailPesananPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="w-full bg-[#f3efe9] min-h-screen flex flex-col">
         <Navbar />
 
@@ -467,24 +472,87 @@ export default function DetailPesananPage() {
                 </div>
               )}
 
-              {redirectActions.length > 0 && (
-                <div className="mt-4 space-y-2 font-serif">
-                  {redirectActions.map((action, index) => (
-                    <a
-                      key={index}
-                      href={action.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-center gap-2 rounded-md bg-black px-4 py-3 text-center text-white hover:bg-[#b89578] transition"
-                    >
-                      <ExternalLink size={18} />
-                      {action.name || "Buka Pembayaran"}
-                    </a>
-                  ))}
+              {paymentData.payment_method === "cstore" && midtrans?.payment_code && (
+                <div className="rounded-md bg-[#f3efe9] px-5 py-5 font-serif">
+                  <div className="mb-4 flex items-center gap-3">
+                    <Store size={28} />
+                    <div>
+                      <p className="font-bold">
+                        {paymentData.store === "alfamart" ? "Alfamart" : "Indomaret"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Tunjukkan kode pembayaran ini ke kasir.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-md bg-white px-4 py-4">
+                    <p className="text-sm text-gray-600">Kode Pembayaran</p>
+
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <p className="text-xl font-bold">{midtrans.payment_code}</p>
+
+                      <button
+                        type="button"
+                        onClick={() => copyText(midtrans.payment_code)}
+                        className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-[#b89578] transition"
+                      >
+                        <Copy size={16} />
+                        Salin
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {!vaInfo && !qrAction && redirectActions.length === 0 && (
+              {paymentData.payment_method === "echannel" && midtrans?.biller_code && (
+                <div className="rounded-md bg-[#f3efe9] px-5 py-5 font-serif">
+                  <div className="mb-4 flex items-center gap-3">
+                    <Landmark size={28} />
+                    <div>
+                      <p className="font-bold">Mandiri Bill Payment</p>
+                      <p className="text-sm text-gray-600">
+                        Gunakan kode perusahaan dan kode bayar berikut.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-md bg-white px-4 py-4 space-y-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Kode Perusahaan (Biller Code)</p>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <p className="text-xl font-bold">{midtrans.biller_code}</p>
+                        <button
+                          type="button"
+                          onClick={() => copyText(midtrans.biller_code)}
+                          className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-[#b89578] transition"
+                        >
+                          <Copy size={16} />
+                          Salin
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Kode Bayar (Bill Key)</p>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <p className="text-xl font-bold">{midtrans.bill_key}</p>
+                        <button
+                          type="button"
+                          onClick={() => copyText(midtrans.bill_key)}
+                          className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-[#b89578] transition"
+                        >
+                          <Copy size={16} />
+                          Salin
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Deeplink / redirect dipindah ke Admin */}
+
+              {!vaInfo && !qrAction && paymentData.payment_method !== "cstore" && paymentData.payment_method !== "echannel" && (
                 <div className="rounded-md bg-yellow-50 px-4 py-3 font-serif text-sm text-yellow-700">
                   Instruksi pembayaran belum tersedia. Coba kembali ke checkout
                   dan buat pembayaran ulang.

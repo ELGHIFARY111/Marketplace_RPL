@@ -2,11 +2,7 @@ import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-/**
- * AdminRoute - Hanya bisa diakses oleh user dengan level "admin".
- * - Belum login → redirect ke login
- * - Login tapi bukan admin → redirect ke homepage
- */
+
 export default function AdminRoute({ children }) {
   const { user, isAuthenticated, loading } = useContext(AuthContext);
 

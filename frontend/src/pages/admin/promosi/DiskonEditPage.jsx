@@ -2,10 +2,13 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function DiskonEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { alerts, showAlert, closeAlert } = useAlert();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +42,7 @@ export default function DiskonEditPage() {
         }
       } catch (error) {
         console.error("Gagal mengambil data:", error);
-        alert("Gagal memuat data promosi");
+        showAlert("Gagal memuat data promosi", "error");
       } finally {
         setLoading(false);
       }
@@ -76,17 +79,17 @@ export default function DiskonEditPage() {
     e.preventDefault();
 
     if (!formData.produk) {
-      alert("Silakan pilih produk terlebih dahulu");
+      showAlert("Silakan pilih produk terlebih dahulu", "warning");
       return;
     }
 
     if (!formData.tanggalKadaluarsa) {
-      alert("Silakan tentukan tanggal kadaluarsa");
+      showAlert("Silakan tentukan tanggal kadaluarsa", "warning");
       return;
     }
 
     if (formData.diskon <= 0) {
-      alert("Diskon harus lebih besar dari 0%");
+      showAlert("Diskon harus lebih besar dari 0%", "warning");
       return;
     }
 
@@ -96,16 +99,17 @@ export default function DiskonEditPage() {
         persentase_diskon: formData.diskon,
         batas_waktu: formData.tanggalKadaluarsa,
       });
-      alert("Diskon berhasil diupdate");
+      showAlert("Diskon berhasil diupdate", "success");
       navigate("/admin/promosi-diskon");
     } catch (error) {
       console.error("Gagal mengupdate diskon:", error);
-      alert(error.response?.data?.message || "Gagal mengupdate diskon");
+      showAlert(error.response?.data?.message || "Gagal mengupdate diskon", "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div>
         {/* HEADER */}
         <div className="flex items-end gap-2">

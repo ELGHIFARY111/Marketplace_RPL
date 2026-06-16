@@ -2,9 +2,12 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function KuponFormPage() {
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [formData, setFormData] = useState({
     kode: "",
@@ -42,17 +45,17 @@ export default function KuponFormPage() {
     e.preventDefault();
 
     if (!formData.kode.trim()) {
-      alert("Masukkan kode kupon terlebih dahulu");
+      showAlert("Masukkan kode kupon terlebih dahulu", "warning");
       return;
     }
 
     if (!formData.tanggalKadaluarsa) {
-      alert("Masukkan tanggal kadaluarsa");
+      showAlert("Masukkan tanggal kadaluarsa", "warning");
       return;
     }
 
     if (formData.diskon <= 0) {
-      alert("Nominal diskon harus lebih besar dari Rp 0");
+      showAlert("Nominal diskon harus lebih besar dari Rp 0", "warning");
       return;
     }
 
@@ -63,16 +66,17 @@ export default function KuponFormPage() {
         kuota: formData.kuota,
         batas_waktu: formData.tanggalKadaluarsa,
       });
-      alert("Kupon berhasil disimpan");
+      showAlert("Kupon berhasil disimpan", "success");
       navigate("/admin/promosi-kupon");
     } catch (error) {
       console.error("Gagal menambahkan kupon:", error);
-      alert(error.response?.data?.message || "Gagal menambahkan kupon");
+      showAlert(error.response?.data?.message || "Gagal menambahkan kupon", "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div>
         {/* Header */}
         <div className="flex items-end gap-2">

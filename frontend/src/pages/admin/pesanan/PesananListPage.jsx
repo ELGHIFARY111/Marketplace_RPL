@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import { Search, ChevronDown, Star, ArrowRight } from "lucide-react";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 // Komponen header kolom sortable
 function SortableTh({ label, sortKey, currentSort, currentDir, onSort }) {
   const active = currentSort === sortKey;
@@ -44,6 +46,7 @@ const STATUS_OPTIONS = [
 
 export default function PesananListPage() {
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
   const [pesanan, setPesanan] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -135,19 +138,20 @@ export default function PesananListPage() {
         body: JSON.stringify({ ids: selectedIds, status: selectedStatus }),
       });
       const data = await res.json();
-      alert(data.message || "Berhasil diperbarui");
+      showAlert(data.message || "Berhasil diperbarui", "success");
       setShowModal(false);
       setModeUpdate(false);
       setSelectedIds([]);
       setSelectedStatus("");
       fetchPesanan();
     } catch (err) {
-      alert("Gagal memperbarui status");
+      showAlert("Gagal memperbarui status", "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       {/* HEADER */}
       <div className="page-header flex items-end gap-2">
         <h1 className="text-[3rem] font-bold ml-1">Pesanan</h1>
@@ -193,7 +197,7 @@ export default function PesananListPage() {
               </button>
               <button
                 onClick={() => {
-                  if (selectedIds.length === 0) { alert("Pilih pesanan dulu"); return; }
+                  if (selectedIds.length === 0) { showAlert("Pilih pesanan dulu", "warning"); return; }
                   setShowModal(true);
                 }}
                 className="bg-green-600 text-white px-5 py-2 rounded-md text-sm"
@@ -215,7 +219,7 @@ export default function PesananListPage() {
 
       {/* TABLE */}
       <div className="rounded-[15px] overflow-hidden border-2 border-[#D9D9D9]">
-        <div className="max-h-[40rem] overflow-y-auto">
+        <div className="max-h-[37rem] overflow-y-auto">
 
           <table className="w-full border-collapse text-sm">
             <thead className="bg-primary-100 sticky -top-1 z-10 border-b-2 border-[#D9D9D9]">

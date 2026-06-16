@@ -2,10 +2,13 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function KuponEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { alerts, showAlert, closeAlert } = useAlert();
   const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
@@ -36,7 +39,7 @@ export default function KuponEditPage() {
         }
       } catch (error) {
         console.error("Gagal memuat kupon:", error);
-        alert("Gagal memuat data kupon");
+        showAlert("Gagal memuat data kupon", "error");
       } finally {
         setLoading(false);
       }
@@ -74,17 +77,17 @@ export default function KuponEditPage() {
     e.preventDefault();
 
     if (!formData.kode.trim()) {
-      alert("Masukkan kode kupon terlebih dahulu");
+      showAlert("Masukkan kode kupon terlebih dahulu", "warning");
       return;
     }
 
     if (!formData.tanggalKadaluarsa) {
-      alert("Masukkan tanggal kadaluarsa");
+      showAlert("Masukkan tanggal kadaluarsa", "warning");
       return;
     }
 
     if (formData.diskon <= 0) {
-      alert("Nominal diskon harus lebih besar dari Rp 0");
+      showAlert("Nominal diskon harus lebih besar dari Rp 0", "warning");
       return;
     }
 
@@ -95,16 +98,17 @@ export default function KuponEditPage() {
         kuota: formData.kuota,
         batas_waktu: formData.tanggalKadaluarsa,
       });
-      alert("Kupon berhasil diupdate");
+      showAlert("Kupon berhasil diupdate", "success");
       navigate("/admin/promosi-kupon");
     } catch (error) {
       console.error("Gagal mengupdate kupon:", error);
-      alert(error.response?.data?.message || "Gagal mengupdate kupon");
+      showAlert(error.response?.data?.message || "Gagal mengupdate kupon", "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div>
         {/* HEADER */}
         <div className="flex items-end gap-2">

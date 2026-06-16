@@ -2,10 +2,13 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function PesanCSDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +24,7 @@ export default function PesanCSDetailPage() {
       }
     } catch (error) {
       console.error("Gagal memuat detail pesan CS:", error);
-      alert("Gagal memuat detail pesan");
+      showAlert("Gagal memuat detail pesan", "error");
     } finally {
       setLoading(false);
     }
@@ -36,18 +39,18 @@ export default function PesanCSDetailPage() {
   const handleSubmitReply = async (e) => {
     e.preventDefault();
     if (!replyText.trim()) {
-      alert("Balasan tidak boleh kosong!");
+      showAlert("Balasan tidak boleh kosong!", "warning");
       return;
     }
 
     try {
       setSubmitting(true);
       await api.post(`/cs/${id}/reply`, { reply: replyText });
-      alert("Balasan berhasil dikirim");
+      showAlert("Balasan berhasil dikirim", "success");
       fetchMessageDetail();
     } catch (error) {
       console.error("Gagal mengirim balasan:", error);
-      alert(error.response?.data?.message || "Gagal mengirim balasan");
+      showAlert(error.response?.data?.message || "Gagal mengirim balasan", "error");
     } finally {
       setSubmitting(false);
     }
@@ -83,6 +86,7 @@ export default function PesanCSDetailPage() {
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="cs-detail-page w-full">
 
         {/* HEADER */}

@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 // Komponen header kolom sortable
 function SortableTh({ label, sortKey, currentSort, currentDir, onSort, className = "" }) {
@@ -28,6 +30,7 @@ export default function KuponPage() {
   const [vouchers, setVouchers] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [sortKey, setSortKey] = useState("id_voucher");
   const [sortDir, setSortDir] = useState("asc");
@@ -48,7 +51,7 @@ export default function KuponPage() {
       setVouchers(res.data?.data || []);
     } catch (error) {
       console.error("Gagal memuat data voucher:", error);
-      alert("Gagal memuat data voucher");
+      showAlert("Gagal memuat data voucher", "error");
     } finally {
       setLoading(false);
     }
@@ -73,11 +76,11 @@ export default function KuponPage() {
 
     try {
       await api.delete(`/voucher/${id}`);
-      alert("Kupon berhasil dihapus");
+      showAlert("Kupon berhasil dihapus", "success");
       fetchVouchers();
     } catch (error) {
       console.error("Gagal menghapus kupon:", error);
-      alert(error.response?.data?.message || "Gagal menghapus kupon");
+      showAlert(error.response?.data?.message || "Gagal menghapus kupon", "error");
     }
   };
 
@@ -97,6 +100,7 @@ export default function KuponPage() {
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="kupon-page">
         {/* Header */}
         <div className="page-header flex items-end gap-0">
@@ -133,7 +137,7 @@ export default function KuponPage() {
 
         {/* Table */}
         <div className="rounded-[15px] overflow-hidden border-2 border-[#D9D9D9]">
-          <div className="max-h-[40rem] overflow-y-auto">
+          <div className="max-h-[37rem] overflow-y-auto">
             {loading ? (
               <p className="text-center py-6 text-gray-500">Memuat data...</p>
             ) : (

@@ -28,7 +28,7 @@ const getDetailPesananAdmin = async (req, res) => {
     const { id } = req.params;
     const [pesananRows] = await db.query(`
       SELECT p.*, u.nama_lengkap AS nama_customer,
-        pb.metode_bayar, pb.status_bayar,
+        pb.metode_bayar, pb.status_bayar, pb.payment_response,
         a.label_alamat, a.nama_penerima, a.no_telp_penerima,
         a.provinsi, a.kabupaten_kota, a.kecamatan, a.desa, a.kode_pos
       FROM pesanan p

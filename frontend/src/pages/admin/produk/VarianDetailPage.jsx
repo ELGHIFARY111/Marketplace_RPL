@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function VariasiDetailPage() {
 const { id } = useParams();
 const navigate = useNavigate();
+const { alerts, showAlert, closeAlert } = useAlert();
 
 const [varian, setVarian] = useState(null);
 const [varians, setVarians] = useState([]);
@@ -55,19 +58,20 @@ const handleDeleteVarian = async (varianId) => {
 
         if (res.ok) {
             setVarians(varians.filter(v => v.id_varian !== varianId));
-            alert("Varian berhasil dihapus");
+            showAlert("Varian berhasil dihapus", "success");
         } else {
             const errData = await res.json();
-            alert(errData.message || "Gagal menghapus varian");
+            showAlert(errData.message || "Gagal menghapus varian", "error");
         }
     } catch (err) {
         console.log(err);
-        alert("Terjadi kesalahan saat menghapus varian");
+        showAlert("Terjadi kesalahan saat menghapus varian", "error");
     }
 };
 
 return (
     <AdminLayout>
+    <PopupAlert alerts={alerts} onClose={closeAlert} />
     {/* HEADER */}
     <div className="page-header flex items-end gap-2">
         <h1 className="text-[2.5rem] font-bold">Produk dan Stok</h1>

@@ -4,9 +4,12 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ShoppingCart } from "lucide-react";
 import api from "../../services/api";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 export default function KeranjangPage() {
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +86,7 @@ export default function KeranjangPage() {
       );
     } catch (error) {
       console.error("Gagal update qty:", error);
-      alert(error.response?.data?.message || "Gagal mengubah jumlah produk");
+      showAlert(error.response?.data?.message || "Gagal mengubah jumlah produk", "error");
     }
   };
 
@@ -107,7 +110,7 @@ export default function KeranjangPage() {
       setSelectedIds((prev) => prev.filter((id) => id !== idKeranjang));
     } catch (error) {
       console.error("Gagal menghapus item:", error);
-      alert(error.response?.data?.message || "Gagal menghapus produk dari keranjang");
+      showAlert(error.response?.data?.message || "Gagal menghapus produk dari keranjang", "error");
     }
   };
 
@@ -152,6 +155,7 @@ export default function KeranjangPage() {
 
   return (
     <div className="min-h-screen bg-[#f3efe9] text-black">
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="w-full min-h-screen flex flex-col">
         <Navbar />
 

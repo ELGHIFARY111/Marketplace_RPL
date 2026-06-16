@@ -14,10 +14,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 export default function ProfilPage() {
   const navigate = useNavigate();
   const { logout, user } = useContext(AuthContext);
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   // Jika admin mengakses halaman profil customer, redirect ke admin panel
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function ProfilPage() {
       setProvinces(res.data.data || []);
     } catch (error) {
       console.error("Gagal memuat provinsi:", error);
-      alert("Gagal memuat data provinsi");
+      showAlert("Gagal memuat data provinsi", "error");
     }
   };
 
@@ -114,7 +117,7 @@ export default function ProfilPage() {
   const handleKirimCsMessage = async (e) => {
     e.preventDefault();
     if (!csSubject.trim() || !csMessage.trim()) {
-      alert("Subjek dan pesan harus diisi!");
+      showAlert("Subjek dan pesan harus diisi!", "warning");
       return;
     }
 
@@ -124,13 +127,13 @@ export default function ProfilPage() {
         subject: csSubject,
         message: csMessage
       });
-      alert("Pesan berhasil dikirim ke Customer Service");
+      showAlert("Pesan berhasil dikirim ke Customer Service", "success");
       setCsSubject("");
       setCsMessage("");
       await fetchCsMessages();
     } catch (error) {
       console.error("Gagal mengirim pesan CS:", error);
-      alert(error.response?.data?.message || "Gagal mengirim pesan");
+      showAlert(error.response?.data?.message || "Gagal mengirim pesan", "error");
     } finally {
       setSendingCs(false);
     }
@@ -179,7 +182,7 @@ export default function ProfilPage() {
       setCities(res.data.data || []);
     } catch (error) {
       console.error("Gagal memuat kabupaten/kota:", error);
-      alert("Gagal memuat kabupaten/kota");
+      showAlert("Gagal memuat kabupaten/kota", "error");
     } finally {
       setLoadingCities(false);
     }
@@ -213,7 +216,7 @@ export default function ProfilPage() {
       setDistricts(res.data.data || []);
     } catch (error) {
       console.error("Gagal memuat kecamatan:", error);
-      alert("Gagal memuat kecamatan");
+      showAlert("Gagal memuat kecamatan", "error");
     } finally {
       setLoadingDistricts(false);
     }
@@ -245,7 +248,7 @@ export default function ProfilPage() {
       setSubdistricts(res.data.data || []);
     } catch (error) {
       console.error("Gagal memuat desa/kelurahan:", error);
-      alert("Gagal memuat desa/kelurahan");
+      showAlert("Gagal memuat desa/kelurahan", "error");
     } finally {
       setLoadingSubdistricts(false);
     }
@@ -302,7 +305,7 @@ export default function ProfilPage() {
         !selectedDistrict ||
         !selectedSubdistrict
       ) {
-        alert("Lengkapi semua data alamat dulu");
+        showAlert("Lengkapi semua data alamat dulu", "warning");
         return;
       }
 
@@ -332,13 +335,13 @@ export default function ProfilPage() {
         destination_id: Number(selectedSubdistrict.id),
       });
 
-      alert("Alamat berhasil ditambahkan");
+      showAlert("Alamat berhasil ditambahkan", "success");
 
       resetFormAlamat();
       await fetchAlamat();
     } catch (error) {
       console.error("Gagal menambah alamat:", error);
-      alert(error.response?.data?.message || "Gagal menambah alamat");
+      showAlert(error.response?.data?.message || "Gagal menambah alamat", "error");
     } finally {
       setSavingAlamat(false);
     }
@@ -355,10 +358,10 @@ export default function ProfilPage() {
         prev.filter((alamat) => alamat.id_alamat !== id_alamat)
       );
 
-      alert("Alamat berhasil dihapus");
+      showAlert("Alamat berhasil dihapus", "success");
     } catch (error) {
       console.error("Gagal menghapus alamat:", error);
-      alert("Gagal menghapus alamat");
+      showAlert("Gagal menghapus alamat", "error");
     }
   };
 
@@ -393,6 +396,7 @@ export default function ProfilPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="w-full bg-[#f3efe9]">
         <Navbar />
 

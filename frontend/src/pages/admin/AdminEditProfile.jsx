@@ -3,9 +3,12 @@ import AdminLayout from "../../layouts/AdminLayout";
 import { User, Save, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 export default function AdminEditProfile() {
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [form, setForm] = useState({
     nama_lengkap: "",
@@ -65,11 +68,11 @@ export default function AdminEditProfile() {
 
       await api.put("/admin/profile", payload);
 
-      alert("Profil admin berhasil diperbarui");
+      showAlert("Profil admin berhasil diperbarui", "success");
       navigate("/admin/profil");
     } catch (error) {
       console.error("Gagal update profil admin:", error);
-      alert("Gagal memperbarui profil admin");
+      showAlert("Gagal memperbarui profil admin", "error");
     } finally {
       setSaving(false);
     }
@@ -85,6 +88,7 @@ export default function AdminEditProfile() {
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div>
         <div className="mb-6 flex items-center gap-4">
           <User size={42} />

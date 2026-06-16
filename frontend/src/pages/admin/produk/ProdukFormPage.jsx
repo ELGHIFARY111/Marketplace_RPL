@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function ProdukFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -154,16 +157,17 @@ export default function ProdukFormPage() {
         });
       }
 
-      alert("Berhasil menyimpan data!");
+      showAlert("Berhasil menyimpan data!", "success");
       navigate("/admin/produk-dan-stok");
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error || "Terjadi kesalahan pada server.";
-      alert(`Gagal menyimpan data: ${msg}`);
+      showAlert(`Gagal menyimpan data: ${msg}`, "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
 
           
           {/* Header Section */}

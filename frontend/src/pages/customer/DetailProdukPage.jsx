@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../../services/api";
 import { ShoppingCart, Star } from "lucide-react";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 const colorMap = {
   Hitam: "#000000",
@@ -27,6 +29,7 @@ const colorMap = {
 export default function DetailProdukPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [product, setProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -149,19 +152,19 @@ export default function DetailProdukPage() {
 
   const validateSelectedVarian = () => {
     if (!selectedColor || !selectedSize) {
-      alert("Pilih warna dan ukuran terlebih dahulu");
+      showAlert("Pilih warna dan ukuran terlebih dahulu", "warning");
       return null;
     }
 
     const selectedVarian = getSelectedVarian();
 
     if (!selectedVarian) {
-      alert("Varian produk tidak ditemukan");
+      showAlert("Varian produk tidak ditemukan", "error");
       return null;
     }
 
     if (selectedVarian.stok <= 0) {
-      alert("Stok varian ini habis");
+      showAlert("Stok varian ini habis", "warning");
       return null;
     }
 
@@ -190,18 +193,18 @@ export default function DetailProdukPage() {
       const success = await addSelectedVarianToCart();
 
       if (success) {
-        alert("Produk berhasil ditambahkan ke keranjang");
+        showAlert("Produk berhasil ditambahkan ke keranjang", "success");
       }
     } catch (error) {
       console.error("Gagal menambahkan ke keranjang:", error);
 
       if (error.response?.status === 401 || error.response?.status === 403) {
-        alert("Silakan login terlebih dahulu");
+        showAlert("Silakan login terlebih dahulu", "warning");
         navigate("/auth/login");
         return;
       }
 
-      alert(error.response?.data?.message || "Gagal menambahkan produk ke keranjang");
+      showAlert(error.response?.data?.message || "Gagal menambahkan produk ke keranjang", "error");
     } finally {
       setAddingCart(false);
     }
@@ -220,12 +223,12 @@ export default function DetailProdukPage() {
       console.error("Gagal checkout:", error);
 
       if (error.response?.status === 401 || error.response?.status === 403) {
-        alert("Silakan login terlebih dahulu");
+        showAlert("Silakan login terlebih dahulu", "warning");
         navigate("/auth/login");
         return;
       }
 
-      alert(error.response?.data?.message || "Gagal memproses checkout");
+      showAlert(error.response?.data?.message || "Gagal memproses checkout", "error");
     } finally {
       setCheckoutLoading(false);
     }
@@ -293,6 +296,7 @@ export default function DetailProdukPage() {
 
   return (
     <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <Navbar />
 
       <main className="px-20 py-14 flex-1">

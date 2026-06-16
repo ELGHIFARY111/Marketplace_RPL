@@ -2,10 +2,13 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function AkunEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [formData, setFormData] = useState({
     id: "",
@@ -31,7 +34,7 @@ export default function AkunEditPage() {
         });
       } catch (error) {
         console.error("Gagal mengambil detail user:", error);
-        alert("Gagal memuat detail akun");
+        showAlert("Gagal memuat detail akun", "error");
       }
     };
 
@@ -51,22 +54,23 @@ export default function AkunEditPage() {
     e.preventDefault();
 
     if (!formData.nama || !formData.email || !formData.level) {
-      alert("Mohon lengkapi nama, email, dan level akses!");
+      showAlert("Mohon lengkapi nama, email, dan level akses!", "warning");
       return;
     }
 
     try {
       await api.put(`/admin/users/${id}`, formData);
-      alert("Akun berhasil diupdate");
+      showAlert("Akun berhasil diupdate", "success");
       navigate("/admin/akun-akses");
     } catch (error) {
       console.error("Gagal memperbarui akun:", error);
-      alert(error.response?.data?.message || "Gagal memperbarui akun");
+      showAlert(error.response?.data?.message || "Gagal memperbarui akun", "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div>
 
         {/* HEADER */}

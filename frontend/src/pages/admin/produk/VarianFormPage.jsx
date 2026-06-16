@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function VariasiFormPage() {
 const { id, productId } = useParams(); // id varian atau productId untuk tambah
 const navigate = useNavigate();
 const isEdit = !!id; // True jika edit, False jika tambah
+const { alerts, showAlert, closeAlert } = useAlert();
 
 const [formData, setFormData] = useState({
     sku: "",
@@ -91,13 +94,13 @@ const handleDeleteVarian = async (varianId) => {
 
         if (res.ok) {
             setVarians(prev => prev.filter(v => v.id_varian !== varianId));
-            alert("Varian berhasil dihapus");
+            showAlert("Varian berhasil dihapus", "success");
         } else {
-            alert("Gagal menghapus varian");
+            showAlert("Gagal menghapus varian", "error");
         }
     } catch (err) {
         console.log("Error delete varian:", err);
-        alert("Terjadi kesalahan saat menghapus varian");
+        showAlert("Terjadi kesalahan saat menghapus varian", "error");
     }
 };
 
@@ -135,7 +138,7 @@ const handleSubmit = async (e) => {
     });
 
     if (res.ok) {
-        alert("Berhasil disimpan!");
+        showAlert("Berhasil disimpan!", "success");
         // Navigate kembali ke detail produk
         const pid = formData.product_id || productId;
         if (pid) {
@@ -145,16 +148,17 @@ const handleSubmit = async (e) => {
         }
     } else {
         const errData = await res.json();
-        alert(`Gagal menyimpan: ${errData.message || errData.error || 'Unknown error'}`);
+        showAlert(`Gagal menyimpan: ${errData.message || errData.error || 'Unknown error'}`, "error");
     }
     } catch (err) {
     console.log(err);
-    alert("Terjadi kesalahan pada server.");
+    showAlert("Terjadi kesalahan pada server.", "error");
     }
 };
 
 return (
     <AdminLayout>
+    <PopupAlert alerts={alerts} onClose={closeAlert} />
     {/* HEADER */}
     <div className="flex items-end gap-2">
         <h1 className="text-[2.5rem] font-bold">Produk dan Stok</h1>

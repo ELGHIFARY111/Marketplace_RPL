@@ -109,7 +109,7 @@ export default function ProdukListPage() {
             </button>
           </div>
         <div className="rounded-[15px] overflow-hidden border border-[#D9D9D9] border-[2px] ">
-          <div className="max-h-[40rem] overflow-y-auto">
+          <div className="max-h-[37rem] overflow-y-auto">
             <table className="produk-table w-full border-collapse ">
               <thead className="bg-primary-100 sticky -top-1 z-10 border-b-2 border-[#D9D9D9]"> 
                 <tr>

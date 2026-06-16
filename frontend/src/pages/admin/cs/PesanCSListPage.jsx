@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 // Komponen header kolom sortable
 function SortableTh({ label, sortKey, currentSort, currentDir, onSort, className = "" }) {
@@ -28,6 +30,7 @@ export default function PesanCSListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [sortKey, setSortKey] = useState("id_pesan");
   const [sortDir, setSortDir] = useState("asc");
@@ -47,7 +50,7 @@ export default function PesanCSListPage() {
       setMessages(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Gagal mengambil pesan CS:", error);
-      alert("Gagal memuat pesan Customer Service");
+      showAlert("Gagal memuat pesan Customer Service", "error");
     } finally {
       setLoading(false);
     }
@@ -78,6 +81,7 @@ export default function PesanCSListPage() {
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="cs-list-page">
 
         {/* HEADER */}
@@ -108,7 +112,7 @@ export default function PesanCSListPage() {
 
         {/* TABLE */}
         <div className="rounded-[15px] overflow-hidden border-2 border-[#D9D9D9]">
-          <div className="max-h-[40rem] overflow-y-auto">
+          <div className="max-h-[37rem] overflow-y-auto">
             <table className="w-full border-collapse">
 
               <thead className="bg-primary-100 sticky top-0 z-10 border-b-2 border-[#D9D9D9] text-sm">

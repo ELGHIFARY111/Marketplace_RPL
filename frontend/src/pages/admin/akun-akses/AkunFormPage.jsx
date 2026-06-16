@@ -2,9 +2,12 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function AkunFormPage() {
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -25,22 +28,23 @@ export default function AkunFormPage() {
     e.preventDefault();
 
     if (!formData.nama || !formData.email || !formData.level || !formData.password) {
-      alert("Mohon isi semua data yang wajib!");
+      showAlert("Mohon isi semua data yang wajib!", "warning");
       return;
     }
 
     try {
       await api.post("/admin/users", formData);
-      alert("Akun berhasil disimpan");
+      showAlert("Akun berhasil disimpan", "success");
       navigate("/admin/akun-akses");
     } catch (error) {
       console.error("Gagal menyimpan akun:", error);
-      alert(error.response?.data?.message || "Gagal menyimpan akun");
+      showAlert(error.response?.data?.message || "Gagal menyimpan akun", "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div>
 
         {/* HEADER */}

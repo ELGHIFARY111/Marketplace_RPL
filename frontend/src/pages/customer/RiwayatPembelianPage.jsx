@@ -4,6 +4,8 @@ import Footer from "../components/Footer";
 import { ClipboardList, Eye, CheckCircle, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import PopupAlert from "../../components/PopupAlert";
+import useAlert from "../../components/useAlert";
 
 // ─── Konstanta Tab ───────────────────────────────────────────────────────────
 const TABS = [
@@ -17,7 +19,7 @@ const TABS = [
 ];
 
 // ─── Komponen RatingModal ─────────────────────────────────────────────────────
-function RatingModal({ pesanan, onClose, onSubmit, preloadedRatings, preloadedKomentar }) {
+function RatingModal({ pesanan, onClose, onSubmit, preloadedRatings, preloadedKomentar, onError }) {
   const [ratings, setRatings] = useState({});
   const [komentar, setKomentar] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -54,7 +56,7 @@ function RatingModal({ pesanan, onClose, onSubmit, preloadedRatings, preloadedKo
       onSubmit();
     } catch (err) {
       console.error("Submit ulasan error:", err);
-      alert("Gagal menyimpan ulasan");
+      onError && onError("Gagal menyimpan ulasan");
     } finally {
       setSubmitting(false);
     }
@@ -147,6 +149,7 @@ function RatingModal({ pesanan, onClose, onSubmit, preloadedRatings, preloadedKo
 // ─── Halaman Utama ───────────────────────────────────────────────────────────
 export default function RiwayatPembelianPage() {
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -207,7 +210,7 @@ export default function RiwayatPembelianPage() {
       setOrders(Array.isArray(dataPesanan) ? dataPesanan : []);
     } catch (error) {
       console.error("Gagal memuat riwayat pesanan:", error.response?.data || error);
-      if (showLoading) alert(error.response?.data?.message || "Gagal memuat riwayat pesanan");
+      if (showLoading) showAlert(error.response?.data?.message || "Gagal memuat riwayat pesanan", "error");
       setOrders([]);
     } finally {
       if (showLoading) setLoading(false);
@@ -248,7 +251,7 @@ export default function RiwayatPembelianPage() {
       navigate("/pesanan/detail", { state: detailPesanan });
     } catch (error) {
       console.error("Gagal mengambil detail pesanan:", error.response?.data || error);
-      alert(error.response?.data?.message || "Gagal membuka detail pesanan");
+      showAlert(error.response?.data?.message || "Gagal membuka detail pesanan", "error");
     } finally {
       setLoadingDetailId(null);
     }
@@ -261,7 +264,7 @@ export default function RiwayatPembelianPage() {
       setConfirmSelesaiId(null);
       fetchRiwayatPesanan(false);
     } catch (error) {
-      alert(error.response?.data?.message || "Gagal mengkonfirmasi pesanan");
+      showAlert(error.response?.data?.message || "Gagal mengkonfirmasi pesanan", "error");
     }
   };
   // Buka modal rating untuk pesanan selesai
@@ -296,7 +299,7 @@ export default function RiwayatPembelianPage() {
       setPreloadedKomentar(initialComments);
       setRatingOrder(detail);
     } catch (error) {
-      alert(error.response?.data?.message || "Gagal membuka form rating");
+      showAlert(error.response?.data?.message || "Gagal membuka form rating", "error");
     } finally {
       setLoadingRatingId(null);
     }
@@ -304,6 +307,7 @@ export default function RiwayatPembelianPage() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-black">
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div className="w-full bg-[#f3efe9] min-h-screen flex flex-col">
         <Navbar />
 
@@ -471,6 +475,7 @@ export default function RiwayatPembelianPage() {
           pesanan={ratingOrder}
           preloadedRatings={preloadedRatings}
           preloadedKomentar={preloadedKomentar}
+          onError={(msg) => showAlert(msg, "error")}
           onClose={() => { setRatingOrder(null); setPreloadedRatings({}); setPreloadedKomentar({}); }}
           onSubmit={() => {
             setRatingOrder(null);

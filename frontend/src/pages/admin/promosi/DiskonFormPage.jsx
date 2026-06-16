@@ -2,9 +2,12 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
+import PopupAlert from "../../../components/PopupAlert";
+import useAlert from "../../../components/useAlert";
 
 export default function DiskonFormPage() {
   const navigate = useNavigate();
+  const { alerts, showAlert, closeAlert } = useAlert();
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
@@ -57,17 +60,17 @@ export default function DiskonFormPage() {
     e.preventDefault();
 
     if (!formData.produk) {
-      alert("Silakan pilih produk terlebih dahulu");
+      showAlert("Silakan pilih produk terlebih dahulu", "warning");
       return;
     }
 
     if (!formData.tanggalKadaluarsa) {
-      alert("Silakan tentukan tanggal kadaluarsa");
+      showAlert("Silakan tentukan tanggal kadaluarsa", "warning");
       return;
     }
 
     if (formData.diskon <= 0) {
-      alert("Diskon harus lebih besar dari 0%");
+      showAlert("Diskon harus lebih besar dari 0%", "warning");
       return;
     }
 
@@ -77,16 +80,17 @@ export default function DiskonFormPage() {
         persentase_diskon: formData.diskon,
         batas_waktu: formData.tanggalKadaluarsa,
       });
-      alert("Diskon berhasil ditambahkan");
+      showAlert("Diskon berhasil ditambahkan", "success");
       navigate("/admin/promosi-diskon");
     } catch (error) {
       console.error("Gagal menambahkan diskon:", error);
-      alert(error.response?.data?.message || "Gagal menambahkan diskon");
+      showAlert(error.response?.data?.message || "Gagal menambahkan diskon", "error");
     }
   };
 
   return (
     <AdminLayout>
+      <PopupAlert alerts={alerts} onClose={closeAlert} />
       <div>
         {/* HEADER */}
         <div className="flex items-end gap-2">
