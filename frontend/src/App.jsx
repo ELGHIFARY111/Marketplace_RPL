@@ -15,6 +15,8 @@ import EditProfilPage from "./pages/customer/EditProfilPage";
 import RiwayatPembelianPage from "./pages/customer/RiwayatPembelianPage";
 import DetailPesananPage from "./pages/customer/DetailPesananPage";
 import CheckoutPage from "./pages/customer/CheckoutPage";
+import TentangKamiPage from "./pages/customer/TentangKamiPage";
+import FAQPage from "./pages/customer/FAQPage";
 
 {/* Admin */}
 import DashboardPage from "./pages/admin/DashboardPage";
@@ -57,6 +59,8 @@ export default function App() {
         {/* User */}
         <Route path="/" element={<HomePage />} />
         <Route path="/produk/detail/:id" element={<DetailProdukPage />} />
+        <Route path="/tentang-kami" element={<TentangKamiPage />} />
+        <Route path="/faq" element={<FAQPage />} />
         {/* User Protected */}
         <Route path="/keranjang" element={<ProtectedRoute><KeranjangPage /></ProtectedRoute>} />
         <Route path="/profil" element={<ProtectedRoute><ProfilPage /></ProtectedRoute>} />

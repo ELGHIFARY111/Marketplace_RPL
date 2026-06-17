@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../../services/api";
+import { UPLOAD_BASE_URL } from "../../services/config";
 
 import { Search, ChevronDown, Star, ArrowRight, ArrowLeft, X } from "lucide-react";
 
@@ -122,7 +123,7 @@ export default function HomePage() {
           image: p.foto 
             ? (p.foto.startsWith("http://") || p.foto.startsWith("https://")
                 ? p.foto
-                : `http://localhost:5000/uploads/${p.foto.replace("public/uploads/", "").replace("uploads/", "")}`)
+                : `${UPLOAD_BASE_URL}/uploads/${p.foto.replace("public/uploads/", "").replace("uploads/", "")}`)
             : null,
           rating: p.avg_rating || 0,
           totalReviews: p.total_ulasan || 0,

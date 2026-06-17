@@ -4,6 +4,7 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import { Search, ChevronDown, Star, ArrowRight } from "lucide-react";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
+import { API_BASE_URL } from "../../../services/config";
 // Komponen header kolom sortable
 function SortableTh({ label, sortKey, currentSort, currentDir, onSort }) {
   const active = currentSort === sortKey;
@@ -75,7 +76,7 @@ export default function PesananListPage() {
   const fetchPesanan = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/pesanan/admin/semua", {
+      const res = await fetch(`${API_BASE_URL}/pesanan/admin/semua`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -129,7 +130,7 @@ export default function PesananListPage() {
   const handleKonfirmasi = async () => {
     if (!selectedStatus || selectedIds.length === 0) return;
     try {
-      const res = await fetch("http://localhost:5000/api/pesanan/admin/update-status", {
+      const res = await fetch(`${API_BASE_URL}/pesanan/admin/update-status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

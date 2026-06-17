@@ -194,6 +194,15 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
+    // Mode direct checkout dari detail produk
+    const directItems = location.state?.directItems;
+    if (directItems && Array.isArray(directItems) && directItems.length > 0) {
+      setCartItems(directItems);
+      setLoadingKeranjang(false);
+      return;
+    }
+
+    // Mode normal: ambil dari keranjang
     const fetchKeranjang = async () => {
       try {
         const res = await api.get("/keranjang");

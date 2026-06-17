@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
+import { API_BASE_URL } from "../../../services/config";
 
 export default function VariasiDetailPage() {
 const { id } = useParams();
@@ -15,13 +16,13 @@ const [varians, setVarians] = useState([]);
 useEffect(() => {
     const fetchData = async () => {
     try {
-        const res = await fetch(`http://localhost:5000/api/varian/${id}`);
+        const res = await fetch(`${API_BASE_URL}/varian/${id}`);
         const data = await res.json();
         setVarian(data);
 
         if (data?.product_id) {
         const resList = await fetch(
-            `http://localhost:5000/api/produk/${data.product_id}/varian`
+            `${API_BASE_URL}/produk/${data.product_id}/varian`
         );
         const listData = await resList.json();
         setVarians(Array.isArray(listData) ? listData : []);
@@ -49,7 +50,7 @@ const handleDeleteVarian = async (varianId) => {
 
     try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/varian/${varianId}`, {
+        const res = await fetch(`${API_BASE_URL}/varian/${varianId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`

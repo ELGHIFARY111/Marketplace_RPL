@@ -6,6 +6,7 @@ import { ShoppingCart } from "lucide-react";
 import api from "../../services/api";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
+import { UPLOAD_BASE_URL } from "../../services/config";
 
 export default function KeranjangPage() {
   const navigate = useNavigate();
@@ -198,7 +199,7 @@ export default function KeranjangPage() {
                         item.file_foto
                           ? (item.file_foto.startsWith("http://") || item.file_foto.startsWith("https://")
                               ? item.file_foto
-                              : `http://localhost:5000/uploads/${item.file_foto.replace("public/uploads/", "").replace("uploads/", "")}`)
+                              : `${UPLOAD_BASE_URL}/uploads/${item.file_foto.replace("public/uploads/", "").replace("uploads/", "")}`)
                           : "/kaos.png"
                       }
                       alt={item.nama_produk}

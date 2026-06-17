@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
+import { API_BASE_URL } from "../../../services/config";
 
 export default function VariasiFormPage() {
 const { id, productId } = useParams(); // id varian atau productId untuk tambah
@@ -25,7 +26,7 @@ const [varians, setVarians] = useState([]);
 // Fetch varian list berdasarkan product_id
 const fetchVarianList = async (prodId) => {
     try {
-        const res = await fetch(`http://localhost:5000/api/produk/${prodId}/varian`);
+        const res = await fetch(`${API_BASE_URL}/produk/${prodId}/varian`);
         const data = await res.json();
         setVarians(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -37,7 +38,7 @@ const fetchVarianList = async (prodId) => {
 // 🔥 fetch data edit
 useEffect(() => {
     if (isEdit && id) {
-    fetch(`http://localhost:5000/api/varian/${id}`)
+    fetch(`${API_BASE_URL}/varian/${id}`)
         .then(res => res.json())
         .then(data => {
         setFormData({
@@ -85,7 +86,7 @@ const handleDeleteVarian = async (varianId) => {
 
     try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/varian/${varianId}`, {
+        const res = await fetch(`${API_BASE_URL}/varian/${varianId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -109,11 +110,11 @@ const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-    let url = "http://localhost:5000/api/varian";
+    let url = `${API_BASE_URL}/varian`;
     let method = "POST";
 
     if (isEdit && id) {
-        url = `http://localhost:5000/api/varian/${id}`;
+        url = `${API_BASE_URL}/varian/${id}`;
         method = "PUT";
     }
 

@@ -4,6 +4,7 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import api from "../../../services/api";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
+import { UPLOAD_BASE_URL } from "../../../services/config";
 
 export default function ProdukFormPage() {
   const { id } = useParams();
@@ -63,7 +64,7 @@ export default function ProdukFormPage() {
             setPreviewUrls(data.images.map(img => {
               if (img.startsWith("http://") || img.startsWith("https://")) return img;
               const cleanImg = img.replace("public/uploads/", "").replace("uploads/", "");
-              return `http://localhost:5000/uploads/${cleanImg}`;
+              return `${UPLOAD_BASE_URL}/uploads/${cleanImg}`;
             }));
           }
 

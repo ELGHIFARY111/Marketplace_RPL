@@ -1,8 +1,8 @@
 import AdminLayout from "../../../layouts/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-
 import { Search, ChevronDown, Star, ArrowRight } from "lucide-react";
+import { API_BASE_URL } from "../../../services/config";
 
 // Komponen header kolom sortable
 function SortableTh({ label, sortKey, currentSort, currentDir, onSort, className = "" }) {
@@ -45,7 +45,7 @@ export default function ProdukListPage() {
   useEffect(() => {
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/produk");
+      const res = await fetch(`${API_BASE_URL}/produk`);
       const data = await res.json();
 
       setProducts(data);
@@ -70,7 +70,7 @@ export default function ProdukListPage() {
     if (!confirm("Yakin mau hapus produk?")) return;
 
     try {
-      await fetch(`http://localhost:5000/api/produk/${id}`, {
+      await fetch(`${API_BASE_URL}/produk/${id}`, {
         method: "DELETE",
       });
 

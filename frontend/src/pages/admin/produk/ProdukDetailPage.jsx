@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
+import { API_BASE_URL, UPLOAD_BASE_URL } from "../../../services/config";
 
 export default function ProdukDetailPage() {
   const { id } = useParams();
@@ -25,7 +26,7 @@ export default function ProdukDetailPage() {
   useEffect(() => {
       const fetchKategori = async () => {
         try {
-          const res = await fetch("http://localhost:5000/api/categories");
+          const res = await fetch(`${API_BASE_URL}/categories`);
           const data = await res.json();
           
           console.log("Response Kategori dari API:", data);
@@ -49,7 +50,7 @@ export default function ProdukDetailPage() {
     if (id) {
       const fetchProduct = async () => {
         try {
-          const res = await fetch(`http://localhost:5000/api/produk/${id}`);
+          const res = await fetch(`${API_BASE_URL}/produk/${id}`);
           const data = await res.json();
 
           setFormData({
@@ -63,14 +64,14 @@ export default function ProdukDetailPage() {
             const fotoUrls = data.images.map(img => {
               if (img.startsWith("http://") || img.startsWith("https://")) return img;
               const cleanImg = img.replace("public/uploads/", "").replace("uploads/", "");
-              return `http://localhost:5000/uploads/${cleanImg}`;
+              return `${UPLOAD_BASE_URL}/uploads/${cleanImg}`;
             });
             setPreviewUrls(fotoUrls);
           }
 
           // Fetch varian produk
           try {
-            const varRes = await fetch(`http://localhost:5000/api/produk/${id}/varian`);
+            const varRes = await fetch(`${API_BASE_URL}/produk/${id}/varian`);
             if (varRes.ok) {
               const varData = await varRes.json();
               setVarians(Array.isArray(varData) ? varData : []);
@@ -116,7 +117,7 @@ export default function ProdukDetailPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/varian/${varianId}`, {
+      const res = await fetch(`${API_BASE_URL}/varian/${varianId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -158,11 +159,11 @@ export default function ProdukDetailPage() {
     e.preventDefault();
 
     try {
-      let url = "http://localhost:5000/api/produk";
+      let url = `${API_BASE_URL}/produk`;
       let method = "POST";
 
       if (id) {
-        url = `http://localhost:5000/api/produk/${id}`;
+        url = `${API_BASE_URL}/produk/${id}`;
         method = "PUT";
       }
 

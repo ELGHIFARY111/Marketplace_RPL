@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
+import { API_BASE_URL } from "../../../services/config";
 
 const STATUS_COLORS = {
   dibayar: "bg-blue-500",
@@ -27,7 +28,7 @@ export default function PesananDetailAdminPage() {
 
   const fetchDetail = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/pesanan/admin/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/pesanan/admin/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -50,7 +51,7 @@ export default function PesananDetailAdminPage() {
     if (!selectedStatus || selectedStatus === pesanan.status_pesanan) return;
     setIsUpdatingStatus(true);
     try {
-      const res = await fetch("http://localhost:5000/api/pesanan/admin/update-status", {
+      const res = await fetch(`${API_BASE_URL}/pesanan/admin/update-status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

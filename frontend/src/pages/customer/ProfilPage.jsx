@@ -19,15 +19,23 @@ import useAlert from "../../components/useAlert";
 
 export default function ProfilPage() {
   const navigate = useNavigate();
-  const { logout, user } = useContext(AuthContext);
+  const { logout, user, loading: authLoading } = useContext(AuthContext);
   const { alerts, showAlert, closeAlert } = useAlert();
 
   // Jika admin mengakses halaman profil customer, redirect ke admin panel
+  // Jika belum login, redirect ke halaman login
   useEffect(() => {
-    if (user && (user.level === "admin" || user.level === "superadmin" || user.level_akses === "admin")) {
+    if (authLoading) return; // Tunggu AuthContext selesai restore session dulu
+
+    if (!user) {
+      navigate("/auth/login", { replace: true });
+      return;
+    }
+
+    if (user.level === "admin" || user.level === "superadmin" || user.level_akses === "admin") {
       navigate("/admin/profil", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -370,7 +378,7 @@ export default function ProfilPage() {
     navigate("/auth/login");
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-[#e5e5e5] text-black flex flex-col">
         <Navbar />

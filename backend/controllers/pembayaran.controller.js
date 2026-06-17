@@ -280,7 +280,7 @@ const createCorePayment = async (req, res) => {
         ...parameter,
         payment_type: "shopeepay",
         shopeepay: {
-          callback_url: "http://localhost:5173/pesanan/detail",
+          callback_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/pesanan/detail`,
         },
       };
     }

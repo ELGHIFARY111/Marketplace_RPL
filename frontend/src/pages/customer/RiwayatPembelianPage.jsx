@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
+import { UPLOAD_BASE_URL } from "../../services/config";
 
 // ─── Konstanta Tab ───────────────────────────────────────────────────────────
 const TABS = [
@@ -83,7 +84,7 @@ function RatingModal({ pesanan, onClose, onSubmit, preloadedRatings, preloadedKo
               <div className="flex items-center gap-3 mb-3">
                 {item.file_foto && (
                   <img
-                    src={`http://localhost:5000/uploads/${item.file_foto}`}
+                    src={`${UPLOAD_BASE_URL}/uploads/${item.file_foto}`}
                     alt={item.nama_produk}
                     className="w-12 h-12 rounded-lg object-cover"
                     onError={(e) => { e.target.style.display = "none"; }}

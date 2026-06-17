@@ -6,6 +6,7 @@ import api from "../../services/api";
 import { ShoppingCart, Star } from "lucide-react";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
+import { UPLOAD_BASE_URL } from "../../services/config";
 
 const colorMap = {
   Hitam: "#000000",
@@ -136,7 +137,7 @@ export default function DetailProdukPage() {
       ? product.images.map((img) => {
           if (img.startsWith("http://") || img.startsWith("https://")) return img;
           const cleanImg = img.replace("public/uploads/", "").replace("uploads/", "");
-          return `http://localhost:5000/uploads/${cleanImg}`;
+          return `${UPLOAD_BASE_URL}/uploads/${cleanImg}`;
         })
       : ["/kaos.png"];
 
@@ -210,28 +211,28 @@ export default function DetailProdukPage() {
     }
   };
 
-  const handleCheckoutNow = async () => {
-    try {
-      setCheckoutLoading(true);
+  const handleCheckoutNow = () => {
+    const selectedVarian = validateSelectedVarian();
 
-      const success = await addSelectedVarianToCart();
+    if (!selectedVarian) return;
 
-      if (success) {
-        navigate("/checkout");
-      }
-    } catch (error) {
-      console.error("Gagal checkout:", error);
+    // Buat item langsung tanpa memasukkan ke keranjang
+    const directItem = {
+      id_keranjang: null,
+      id_varian: selectedVarian.id_varian,
+      id_produk: product.id_produk || product.id,
+      nama_produk: product.name || product.nama_produk,
+      warna: selectedVarian.warna || null,
+      ukuran: selectedVarian.ukuran || null,
+      harga: Number(selectedVarian.harga),
+      qty: 1,
+      berat_gram: Number(selectedVarian.berat_gram || 1000),
+      subtotal: Number(selectedVarian.harga),
+    };
 
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        showAlert("Silakan login terlebih dahulu", "warning");
-        navigate("/auth/login");
-        return;
-      }
-
-      showAlert(error.response?.data?.message || "Gagal memproses checkout", "error");
-    } finally {
-      setCheckoutLoading(false);
-    }
+    navigate("/checkout", {
+      state: { directItems: [directItem] },
+    });
   };
 
   const renderStars = (rating) => {

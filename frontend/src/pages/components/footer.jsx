@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 export default function Footer() {
+  const navigate = useNavigate();
+
   return (
     <footer id="footer" className="mt-20 bg-[#e7e1d9] px-16 py-8">
       <div className="grid grid-cols-4 gap-10">
@@ -9,8 +13,18 @@ export default function Footer() {
 
         <div className="border-l-4 border-gray-300 pl-10">
           <h3 className="font-semibold">Zenfy</h3>
-          <p className="mt-2 text-sm">Tentang Kami</p>
-          <p className="mt-2 text-sm">FAQ</p>
+          <p
+            onClick={() => navigate("/tentang-kami")}
+            className="mt-2 text-sm cursor-pointer hover:text-[#b89578] hover:underline transition"
+          >
+            Tentang Kami
+          </p>
+          <p
+            onClick={() => navigate("/faq")}
+            className="mt-2 text-sm cursor-pointer hover:text-[#b89578] hover:underline transition"
+          >
+            FAQ
+          </p>
         </div>
 
         <div className="border-l-4 border-gray-300 pl-10">

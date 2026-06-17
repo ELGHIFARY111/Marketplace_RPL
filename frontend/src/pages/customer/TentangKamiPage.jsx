@@ -1,40 +1,46 @@
-// About Page Template
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+
 export default function TentangKamiPage() {
+  const navigate = useNavigate();
+
   return (
-    <div className="tentang-kami-page">
-      <section className="hero">
-        <h1>About Marketplace</h1>
-        <p>Discover our story and mission</p>
-      </section>
+    <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
+      <Navbar />
 
-      <section className="about-content">
-        <h2>Who We Are</h2>
-        <p>
-          Marketplace Apparel adalah platform e-commerce terkemuka yang menyediakan koleksi pakaian terlengkap
-          dengan kualitas terbaik dan harga kompetitif.
-        </p>
+      <main className="flex-1 flex items-center justify-center px-20 py-24">
+        <div className="max-w-2xl text-center">
+          <h1 className="text-7xl font-serif font-bold mb-8 tracking-tight">Zenfy</h1>
 
-        <h2>Our Mission</h2>
-        <p>
-          Misi kami adalah menyediakan pengalaman berbelanja online yang mudah, aman, dan menyenangkan bagi
-          semua pelanggan.
-        </p>
+          <div className="w-16 h-1 bg-[#b89578] rounded-full mx-auto mb-8" />
 
-        <h2>Why Choose Us</h2>
-        <ul>
-          <li>Wide selection of apparel</li>
-          <li>Competitive prices</li>
-          <li>Fast and reliable shipping</li>
-          <li>Excellent customer service</li>
-          <li>Secure payment methods</li>
-        </ul>
-      </section>
+          <p className="text-lg text-gray-700 leading-relaxed mb-6">
+            Zenfy adalah brand fashion lokal Indonesia yang hadir untuk menghadirkan
+            pakaian berkualitas tinggi dengan desain yang elegan dan harga yang terjangkau.
+          </p>
 
-      <section className="contact-section">
-        <h2>Get in Touch</h2>
-        <p>Have questions? We'd love to hear from you!</p>
-        <a href="/hubungi-cs">Contact Us</a>
-      </section>
+          <p className="text-lg text-gray-700 leading-relaxed mb-6">
+            Kami percaya bahwa setiap orang berhak tampil percaya diri. Mulai dari
+            kaos kasual hingga kemeja formal, setiap produk Zenfy dirancang dengan
+            memperhatikan kenyamanan, ketahanan, dan estetika.
+          </p>
+
+          <p className="text-lg text-gray-700 leading-relaxed">
+            Berdiri sejak 2021, Zenfy terus tumbuh bersama kepercayaan pelanggan
+            dari seluruh Indonesia. Terima kasih telah menjadi bagian dari perjalanan kami.
+          </p>
+
+          <button
+            onClick={() => navigate("/")}
+            className="mt-12 rounded-full bg-black px-10 py-4 font-serif font-bold text-white hover:bg-[#b89578] transition"
+          >
+            Lihat Koleksi
+          </button>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
