@@ -8,6 +8,20 @@ router.put('/profile', verifyAdmin, adminController.updateAdminProfile);
 router.get('/dashboard-stats', verifyAdmin, adminController.getDashboardStats);
 router.delete('/:id', verifyAdmin, adminController.deleteAdmin);
 
+router.get('/debug-stats', async (req, res) => {
+  try {
+    const mockReq = {};
+    const mockRes = {
+      json: (data) => res.json(data),
+      status: (code) => ({ json: (err) => res.status(code).json(err) })
+    };
+    await adminController.getDashboardStats(mockReq, mockRes);
+  } catch (e) {
+    res.status(500).send(e.stack);
+  }
+});
+
+
 // User and Access Management routes
 router.get('/users', verifyAdmin, adminController.getAllUsers);
 router.get('/users/:id', verifyAdmin, adminController.getUserById);

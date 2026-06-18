@@ -70,7 +70,7 @@ export default function AdminDashboard() {
         
         setData(processedData);
       } catch (err) {
-        console.error("Gagal mengambil dashboard stats:", err);
+        console.error("Gagal mengambil dashboard stats:", err.response?.data || err);
       } finally {
         setLoading(false);
       }

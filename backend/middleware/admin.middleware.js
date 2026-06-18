@@ -12,7 +12,10 @@ const verifyAdmin = (req, res, next) => {
 
     if (user.level !== 'admin') return res.status(403).json({ message: 'Access denied: not admin' });
 
-    req.adminId = user.id; // mirip user
+    req.adminId = user.id || user.id_user || user.userId;
+    
+    if (!req.adminId) return res.status(403).json({ message: 'Invalid token structure' });
+    
     next();
   });
 };
