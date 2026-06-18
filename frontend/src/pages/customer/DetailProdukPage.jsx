@@ -7,6 +7,7 @@ import { ShoppingCart, Star } from "lucide-react";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
 import { UPLOAD_BASE_URL } from "../../services/config";
+import { PageLoader } from "../../components/Loading";
 
 const colorMap = {
   Hitam: "#000000",
@@ -275,9 +276,7 @@ export default function DetailProdukPage() {
     return (
       <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center h-[60vh]">
-          <p className="text-gray-500 text-lg">Memuat produk...</p>
-        </div>
+        <PageLoader message="Memuat produk..." />
         <Footer />
       </div>
     );

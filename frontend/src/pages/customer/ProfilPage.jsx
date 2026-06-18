@@ -16,6 +16,7 @@ import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
+import { PageLoader } from "../../components/Loading";
 
 export default function ProfilPage() {
   const navigate = useNavigate();
@@ -382,9 +383,7 @@ export default function ProfilPage() {
     return (
       <div className="min-h-screen bg-[#e5e5e5] text-black flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-gray-500 text-lg">Memuat profil...</p>
-        </div>
+        <PageLoader message="Memuat profil..." />
         <Footer />
       </div>
     );

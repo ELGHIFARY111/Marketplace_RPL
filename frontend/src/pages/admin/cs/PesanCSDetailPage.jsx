@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
+import { SectionLoader } from "../../../components/Loading";
 
 export default function PesanCSDetailPage() {
   const { id } = useParams();
@@ -71,7 +72,7 @@ export default function PesanCSDetailPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <p className="text-gray-500 py-6 text-center">Memuat detail pesan...</p>
+        <SectionLoader message="Memuat detail pesan..." />
       </AdminLayout>
     );
   }

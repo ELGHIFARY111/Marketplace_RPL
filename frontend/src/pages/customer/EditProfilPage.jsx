@@ -7,6 +7,7 @@ import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
+import { PageLoader } from "../../components/Loading";
 
 export default function EditProfilPage() {
   const navigate = useNavigate();
@@ -77,9 +78,7 @@ export default function EditProfilPage() {
     return (
       <div className="min-h-screen bg-[#e5e5e5] text-black flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center h-[60vh]">
-          <p className="text-gray-500 text-lg">Memuat formulir...</p>
-        </div>
+        <PageLoader message="Memuat formulir..." />
         <Footer />
       </div>
     );

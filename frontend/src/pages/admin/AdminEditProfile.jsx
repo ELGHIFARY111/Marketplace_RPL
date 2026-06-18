@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import { User, Save, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
+import { SectionLoader } from "../../components/Loading";
 
 export default function AdminEditProfile() {
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ export default function AdminEditProfile() {
   if (loading) {
     return (
       <AdminLayout>
-        <p>Memuat data profil...</p>
+        <SectionLoader message="Memuat data profil..." />
       </AdminLayout>
     );
   }

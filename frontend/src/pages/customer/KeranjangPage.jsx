@@ -4,6 +4,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { ShoppingCart } from "lucide-react";
 import api from "../../services/api";
+import { PageLoader } from "../../components/Loading";
 import PopupAlert from "../../components/PopupAlert";
 import useAlert from "../../components/useAlert";
 import { UPLOAD_BASE_URL } from "../../services/config";
@@ -140,16 +141,10 @@ export default function KeranjangPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3efe9] text-black">
-        <div className="w-full min-h-screen flex flex-col">
-          <Navbar />
-
-          <main className="flex flex-1 items-center justify-center">
-            <p className="text-gray-500 text-lg">Memuat keranjang...</p>
-          </main>
-
-          <Footer />
-        </div>
+      <div className="min-h-screen bg-[#f3efe9] text-black flex flex-col">
+        <Navbar />
+        <PageLoader message="Memuat keranjang..." />
+        <Footer />
       </div>
     );
   }

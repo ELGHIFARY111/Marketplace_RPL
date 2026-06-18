@@ -27,7 +27,7 @@ import {
 } from "recharts";
 
 import AdminLayout from "../../layouts/AdminLayout";
-import { PageLoader } from "../../components/Loading";
+import { SectionLoader } from "../../components/Loading";
 
 const COLORS = ["#22c55e", "#3b82f6", "#ef4444", "#eab308", "#ec4899", "#8b5cf6"];
 
@@ -101,7 +101,11 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return <PageLoader message="Memuat data dashboard..." />;
+    return (
+      <AdminLayout>
+        <SectionLoader message="Memuat data dashboard..." />
+      </AdminLayout>
+    );
   }
 
   const stats = data?.stats || { totalCustomers: 0, ordersToday: 0, revenueMonth: 0, totalProducts: 0 };

@@ -4,6 +4,7 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import PopupAlert from "../../../components/PopupAlert";
 import useAlert from "../../../components/useAlert";
 import { API_BASE_URL } from "../../../services/config";
+import { SectionLoader } from "../../../components/Loading";
 
 const STATUS_COLORS = {
   dibayar: "bg-blue-500",
@@ -78,7 +79,7 @@ export default function PesananDetailAdminPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <p className="p-8 text-gray-500">Memuat data...</p>
+        <SectionLoader message="Memuat data pesanan..." />
       </AdminLayout>
     );
   }

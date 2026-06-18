@@ -1,16 +1,17 @@
 /**
  * Komponen loading yang reusable:
- * - PageLoader: full-screen spinner (untuk route loading, profil, dsb)
- * - ProductSkeleton: skeleton card yang mirip tampilan produk (untuk HomePage)
- * - InlineSpinner: spinner kecil untuk tombol atau section kecil
+ * - PageLoader: loading di dalam area konten (Navbar tetap terlihat)
+ * - SectionLoader: loading di dalam panel/card
+ * - ProductSkeleton: skeleton card mirip kartu produk
+ * - InlineSpinner: spinner kecil untuk tombol
  */
 
-// ─── Full-page loader ────────────────────────────────────────
+// ─── Centered content-area loader (Navbar TETAP terlihat) ────
 export function PageLoader({ message = "Memuat..." }) {
   return (
-    <div className="min-h-screen bg-[#f3efe9] flex flex-col items-center justify-center gap-5">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5">
       {/* Animated ring */}
-      <div className="relative w-20 h-20">
+      <div className="relative w-16 h-16">
         <div className="absolute inset-0 rounded-full border-4 border-[#e7e1d9]" />
         <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#b89578] animate-spin" />
         <div className="absolute inset-2 rounded-full border-4 border-transparent border-t-[#a47f63] animate-spin [animation-duration:1.5s]" />
@@ -18,11 +19,25 @@ export function PageLoader({ message = "Memuat..." }) {
       </div>
 
       <div className="text-center">
-        <p className="text-2xl font-serif font-medium text-gray-800 tracking-wide animate-pulse">
+        <p className="text-xl font-serif font-medium text-gray-700 tracking-wide">
           Zenvy
         </p>
-        <p className="text-sm text-gray-500 mt-1">{message}</p>
+        <p className="text-sm text-gray-400 mt-1 animate-pulse">{message}</p>
       </div>
+    </div>
+  );
+}
+
+// ─── Inside panel/card loader (untuk AdminLayout, dll) ───────
+export function SectionLoader({ message = "Memuat data..." }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[300px] gap-4">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 rounded-full border-4 border-[#e7e1d9]" />
+        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#b89578] animate-spin" />
+        <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-[#a47f63] animate-spin [animation-duration:1.5s]" />
+      </div>
+      <p className="text-sm text-gray-400 animate-pulse">{message}</p>
     </div>
   );
 }
@@ -33,24 +48,18 @@ export function ProductSkeleton() {
     <div className="overflow-hidden rounded-t-[28px] rounded-b-[12px] border border-gray-200 bg-[#fcfcfc] animate-pulse">
       {/* Image area */}
       <div className="bg-[#f0ece6] h-[252px] relative p-4 rounded-t-[28px]">
-        {/* Color dots placeholder */}
         <div className="absolute left-4 top-3 flex gap-2">
           <div className="h-4 w-4 rounded-full bg-gray-300" />
           <div className="h-4 w-4 rounded-full bg-gray-300" />
         </div>
-        {/* Image placeholder */}
         <div className="flex h-full items-center justify-center">
           <div className="w-28 h-28 rounded-xl bg-gray-200" />
         </div>
       </div>
-
       {/* Info area */}
       <div className="bg-white p-4 space-y-3">
-        {/* Product name */}
         <div className="h-5 bg-gray-200 rounded-md w-3/4" />
-        {/* Price */}
         <div className="h-5 bg-gray-200 rounded-md w-1/2" />
-        {/* Rating row */}
         <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
           <div className="h-3 w-3 rounded-full bg-gray-200" />
           <div className="h-3 bg-gray-200 rounded w-20" />
@@ -60,7 +69,6 @@ export function ProductSkeleton() {
   );
 }
 
-// Grid of skeleton cards (untuk section produk)
 export function ProductSkeletonGrid({ count = 12 }) {
   return (
     <div className="grid grid-cols-4 gap-x-10 gap-y-8">
@@ -88,3 +96,4 @@ export function InlineSpinner({ size = 20, color = "#b89578" }) {
     </svg>
   );
 }
+

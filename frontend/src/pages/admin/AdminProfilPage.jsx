@@ -4,6 +4,7 @@ import { User, LogOut, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
+import { SectionLoader } from "../../components/Loading";
 
 export default function AdminProfile() {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function AdminProfile() {
   if (loading) {
     return (
       <AdminLayout>
-        <p>Memuat profil...</p>
+        <SectionLoader message="Memuat profil admin..." />
       </AdminLayout>
     );
   }
