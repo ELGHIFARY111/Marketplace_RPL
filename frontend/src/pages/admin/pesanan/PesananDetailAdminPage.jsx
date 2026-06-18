@@ -111,6 +111,26 @@ export default function PesananDetailAdminPage() {
         }
       });
     }
+
+    // Auto-Generate Sandbox Simulator Links
+    if (midtrans.payment_type === "echannel") {
+      links.push({ name: "Simulator Pembayaran Mandiri", url: "https://simulator.sandbox.midtrans.com/mandiri/bill/index" });
+    } else if (midtrans.payment_type === "bank_transfer") {
+      if (midtrans.va_numbers && midtrans.va_numbers.length > 0) {
+        const bank = midtrans.va_numbers[0].bank;
+        links.push({ name: `Simulator VA ${bank.toUpperCase()}`, url: `https://simulator.sandbox.midtrans.com/${bank}/va/index` });
+      } else if (midtrans.permata_va_number) {
+        links.push({ name: "Simulator VA PERMATA", url: "https://simulator.sandbox.midtrans.com/permata/va/index" });
+      }
+    } else if (midtrans.payment_type === "cstore") {
+      if (midtrans.store === "indomaret") {
+        links.push({ name: "Simulator Indomaret", url: "https://simulator.sandbox.midtrans.com/indomaret/index" });
+      } else if (midtrans.store === "alfamart") {
+        links.push({ name: "Simulator Alfamart", url: "https://simulator.sandbox.midtrans.com/alfamart/index" });
+      }
+    } else if (midtrans.payment_type === "qris") {
+      links.push({ name: "Simulator QRIS", url: "https://simulator.sandbox.midtrans.com/qris/index" });
+    }
     
     return links;
   };
