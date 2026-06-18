@@ -38,7 +38,37 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const res = await api.get("/admin/dashboard-stats");
-        setData(res.data);
+        const rawData = res.data;
+        
+        // Ensure numeric values for Recharts and format functions
+        const processedData = {
+          ...rawData,
+          stats: {
+            ...rawData.stats,
+            totalCustomers: Number(rawData.stats.totalCustomers || 0),
+            ordersToday: Number(rawData.stats.ordersToday || 0),
+            revenueMonth: Number(rawData.stats.revenueMonth || 0),
+            totalProducts: Number(rawData.stats.totalProducts || 0),
+          },
+          salesMonthly: (rawData.salesMonthly || []).map(item => ({
+            ...item,
+            sales: Number(item.sales || 0)
+          })),
+          orderStatus: (rawData.orderStatus || []).map(item => ({
+            ...item,
+            value: Number(item.value || 0)
+          })),
+          weeklyOrders: (rawData.weeklyOrders || []).map(item => ({
+            ...item,
+            total: Number(item.total || 0)
+          })),
+          bestSelling: (rawData.bestSelling || []).map(item => ({
+            ...item,
+            sold: Number(item.sold || 0)
+          }))
+        };
+        
+        setData(processedData);
       } catch (err) {
         console.error("Gagal mengambil dashboard stats:", err);
       } finally {

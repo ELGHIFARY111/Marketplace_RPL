@@ -72,7 +72,7 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin" element={<AdminRoute><DashboardPage /></AdminRoute>} />
         <Route path="/admin/profil" element={<AdminRoute><AdminProfilPage /></AdminRoute>} />
-        <Route path="/admin/profil/edit" element={<AdminEditProfile />} />
+        <Route path="/admin/profil/edit" element={<AdminRoute><AdminEditProfile /></AdminRoute>} />
         <Route path="/admin/produk-dan-stok" element={<AdminRoute><ProdukListPage /></AdminRoute>} />
         <Route path="/admin/produk-dan-stok/detail/:id" element={<AdminRoute><ProdukDetailPage /></AdminRoute>} />
         <Route path="/admin/produk-dan-stok/edit/:id" element={<AdminRoute><ProdukFormPage /></AdminRoute>} />
@@ -81,7 +81,6 @@ export default function App() {
         <Route path="/admin/varian/edit/:id" element={<AdminRoute><VarianFormPage /></AdminRoute>} />
         <Route path="/admin/varian/detail/:id" element={<AdminRoute><VarianDetailPage /></AdminRoute>} />
         <Route path="/admin/pesanan" element={<AdminRoute><PesananListPage /></AdminRoute>} />
-        <Route path="/admin/pesanan" element={<AdminRoute><PesananListPage /></AdminRoute>} />
         <Route path="/admin/pesanan/detail/:id" element={<AdminRoute><PesananDetailAdminPage /></AdminRoute>} />
         <Route path="/admin/promosi-kupon" element={<AdminRoute><KuponPage /></AdminRoute>} />
         <Route path="/admin/promosi-kupon/tambah" element={<AdminRoute><KuponFormPage /></AdminRoute>}/>
@@ -89,9 +88,9 @@ export default function App() {
         <Route path="/admin/promosi-diskon" element={<AdminRoute><DiskonPage /></AdminRoute>} />
         <Route path="/admin/promosi-diskon/tambah" element={<AdminRoute><DiskonFormPage /></AdminRoute>} />
         <Route path="/admin/promosi-diskon/edit/:id" element={<AdminRoute><DiskonEditPage /></AdminRoute>} />
-        <Route path="/admin/akun-akses" element={<AkunAksesPage />} />
-        <Route path="/admin/akun-akses/tambah" element={<AkunFormPage />} />
-        <Route path="/admin/akun-akses/edit/:id" element={<AkunEditPage />} />
+        <Route path="/admin/akun-akses" element={<AdminRoute><AkunAksesPage /></AdminRoute>} />
+        <Route path="/admin/akun-akses/tambah" element={<AdminRoute><AkunFormPage /></AdminRoute>} />
+        <Route path="/admin/akun-akses/edit/:id" element={<AdminRoute><AkunEditPage /></AdminRoute>} />
         <Route path="/admin/cs" element={<AdminRoute><PesanCSListPage /></AdminRoute>} />
         <Route path="/admin/cs/detail/:id" element={<AdminRoute><PesanCSDetailPage /></AdminRoute>} />
       </Routes>
