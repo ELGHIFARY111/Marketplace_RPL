@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const cache = require('../utils/cache');
 
 // Ambil profil admin
 const getAdminProfile = async (req, res) => {
@@ -64,6 +65,10 @@ const deleteAdmin = async (req, res) => {
 
 const getDashboardStats = async (req, res) => {
   try {
+    const CACHE_KEY = 'dashboard:stats';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) return res.json(cached);
+
     // 1. Total Customer
     const [customerRows] = await db.query(
       "SELECT COUNT(*) AS total FROM users WHERE level_akses = 'customer'"
@@ -136,7 +141,7 @@ const getDashboardStats = async (req, res) => {
        WHERE vp.stok <= 5 LIMIT 3`
     );
 
-    res.json({
+    const result = {
       stats: {
         totalCustomers,
         ordersToday,
@@ -144,33 +149,36 @@ const getDashboardStats = async (req, res) => {
         totalProducts,
       },
       salesMonthly: salesMonthlyRows.length > 0 ? salesMonthlyRows : [
-        { month: "Jan", sales: 0 },
-        { month: "Feb", sales: 0 },
-        { month: "Mar", sales: 0 },
-        { month: "Apr", sales: 0 },
-        { month: "Mei", sales: 0 },
-        { month: "Jun", sales: 0 },
+        { month: 'Jan', sales: 0 },
+        { month: 'Feb', sales: 0 },
+        { month: 'Mar', sales: 0 },
+        { month: 'Apr', sales: 0 },
+        { month: 'Mei', sales: 0 },
+        { month: 'Jun', sales: 0 },
       ],
       orderStatus: orderStatusRows.length > 0 ? orderStatusRows : [
-        { name: "selesai", value: 0 },
-        { name: "diproses", value: 0 },
-        { name: "dibatalkan", value: 0 },
+        { name: 'selesai', value: 0 },
+        { name: 'diproses', value: 0 },
+        { name: 'dibatalkan', value: 0 },
       ],
       weeklyOrders: weeklyOrdersRows.length > 0 ? weeklyOrdersRows : [
-        { day: "Sen", total: 0 },
-        { day: "Sel", total: 0 },
-        { day: "Rab", total: 0 },
-        { day: "Kam", total: 0 },
-        { day: "Jum", total: 0 },
-        { day: "Sab", total: 0 },
-        { day: "Min", total: 0 },
+        { day: 'Sen', total: 0 },
+        { day: 'Sel', total: 0 },
+        { day: 'Rab', total: 0 },
+        { day: 'Kam', total: 0 },
+        { day: 'Jum', total: 0 },
+        { day: 'Sab', total: 0 },
+        { day: 'Min', total: 0 },
       ],
       bestSelling: bestSellingRows.length > 0 ? bestSellingRows : [
-        { name: "Belum ada data", sold: 0 }
+        { name: 'Belum ada data', sold: 0 }
       ],
       recentOrders,
       lowStockItems,
-    });
+    };
+
+    cache.set(CACHE_KEY, result, 120); // cache 2 menit
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

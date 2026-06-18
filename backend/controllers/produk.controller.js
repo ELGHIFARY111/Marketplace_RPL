@@ -1,8 +1,13 @@
 const db = require('../config/db');
 const { cloudinary } = require('../middleware/upload.middleware');
+const cache = require('../utils/cache');
 
 const getAllProducts = async (req, res) => {
   try {
+    const CACHE_KEY = 'produk:all';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) return res.json(cached);
+
     const [rows] = await db.query(`
       SELECT 
         p.id_produk,
@@ -25,6 +30,7 @@ const getAllProducts = async (req, res) => {
       GROUP BY p.id_produk, p.nama_produk, p.deskripsi, c.nama_kategori
     `);
 
+    cache.set(CACHE_KEY, rows, 120); // cache 2 menit
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -34,6 +40,9 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
+    const CACHE_KEY = `produk:${id}`;
+    const cached = cache.get(CACHE_KEY);
+    if (cached) return res.json(cached);
     
     // Fetch produk + kategori
     const [produk] = await db.query(
@@ -84,6 +93,7 @@ const getProductById = async (req, res) => {
       diskon: diskon
     };
 
+    cache.set(CACHE_KEY, productData, 300); // cache 5 menit
     res.json(productData);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -120,6 +130,7 @@ const createProduct = async (req, res) => {
     }
 
     await connection.commit();
+    cache.delByPrefix('produk:'); // invalidate semua cache produk
     res.status(201).json({ message: 'Product created successfully', id: newProductId });
   } catch (error) {
     await connection.rollback();
@@ -179,6 +190,7 @@ const updateProduct = async (req, res) => {
     }
 
     await connection.commit();
+    cache.delByPrefix('produk:'); // invalidate cache produk ini & daftar
     res.json({ message: `Product ${id} updated` });
   } catch (error) {
     await connection.rollback();
@@ -201,6 +213,7 @@ const deleteProduct = async (req, res) => {
     await connection.query('DELETE FROM produk WHERE id_produk = ?', [id]);
 
     await connection.commit();
+    cache.delByPrefix('produk:'); // invalidate cache produk ini & daftar
     res.json({ message: `Product ${id} deleted` });
   } catch (error) {
     await connection.rollback();
