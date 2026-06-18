@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import { ProductSkeletonGrid } from "../../components/Loading";
 import api from "../../services/api";
 import { UPLOAD_BASE_URL } from "../../services/config";
 
@@ -77,6 +78,7 @@ export default function HomePage() {
   const [ukuranList, setUkuranList] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [search, setSearch] = useState("");
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   // Baca query param ?search= dari URL (dikirim dari tombol search di navbar)
   useEffect(() => {
@@ -148,6 +150,8 @@ export default function HomePage() {
         setCategories(catRes.data);
       } catch (err) {
         console.log("Error fetch data:", err);
+      } finally {
+        setLoadingProducts(false);
       }
     };
 
@@ -481,7 +485,9 @@ export default function HomePage() {
 
       <section className="bg-white px-24 py-8">
         <div className="grid grid-cols-4 gap-x-10 gap-y-8">
-          {paginatedProducts.length > 0 ? (
+          {loadingProducts ? (
+            <ProductSkeletonGrid count={12} />
+          ) : paginatedProducts.length > 0 ? (
             paginatedProducts.map((product) => (
               <div
                 key={product.id}
