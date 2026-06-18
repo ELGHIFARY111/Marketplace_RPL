@@ -1,4 +1,4 @@
-import AuthLayout from "../components/AuthLayout";
+import AuthLayout from "../../components/AuthLayout";
 import { useNavigate } from "react-router-dom";
 
 export default function forgotPassword() {

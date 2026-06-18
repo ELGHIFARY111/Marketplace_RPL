@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import { ClipboardList, Eye, CheckCircle, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";

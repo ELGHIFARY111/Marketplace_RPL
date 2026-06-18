@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
