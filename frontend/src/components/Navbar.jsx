@@ -52,7 +52,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="flex items-center justify-between px-8 py-4 bg-[#f3efe9]">
+    <header className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 bg-[#f3efe9]/95 backdrop-blur-sm shadow-sm">
       <h1
         className="text-2xl font-bold cursor-pointer"
         onClick={() => navigate("/")}
