@@ -6,7 +6,7 @@ const getAdminProfile = async (req, res) => {
   try {
     const adminId = req.adminId; // dari verifyAdmin middleware
     const [admins] = await db.query(
-      'SELECT id_user, nama_lengkap, email, no_telp, level_akses FROM users WHERE id_user = ? AND level_akses = "admin"',
+      "SELECT id_user, nama_lengkap, email, no_telp, level_akses FROM users WHERE id_user = ? AND level_akses = 'admin'",
       [adminId]
     );
 
@@ -30,18 +30,18 @@ const updateAdminProfile = async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
       await db.query(
-        'UPDATE users SET nama_lengkap = ?, email = ?, no_telp = ?, password = ? WHERE id_user = ? AND level_akses = "admin"',
+        "UPDATE users SET nama_lengkap = ?, email = ?, no_telp = ?, password = ? WHERE id_user = ? AND level_akses = 'admin'",
         [nama_lengkap, email, no_telp, hashedPassword, adminId]
       );
     } else {
       await db.query(
-        'UPDATE users SET nama_lengkap = ?, email = ?, no_telp = ? WHERE id_user = ? AND level_akses = "admin"',
+        "UPDATE users SET nama_lengkap = ?, email = ?, no_telp = ? WHERE id_user = ? AND level_akses = 'admin'",
         [nama_lengkap, email, no_telp, adminId]
       );
     }
 
     const [updatedAdmins] = await db.query(
-      'SELECT id_user, nama_lengkap, email, no_telp, level_akses FROM users WHERE id_user = ? AND level_akses = "admin"',
+      "SELECT id_user, nama_lengkap, email, no_telp, level_akses FROM users WHERE id_user = ? AND level_akses = 'admin'",
       [adminId]
     );
 
@@ -55,7 +55,7 @@ const updateAdminProfile = async (req, res) => {
 const deleteAdmin = async (req, res) => {
   try {
     const adminId = req.adminId;
-    await db.query('DELETE FROM users WHERE id_user = ? AND level_akses = "admin"', [adminId]);
+    await db.query("DELETE FROM users WHERE id_user = ? AND level_akses = 'admin'", [adminId]);
     res.json({ message: `Admin ${adminId} deleted` });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -66,7 +66,7 @@ const getDashboardStats = async (req, res) => {
   try {
     // 1. Total Customer
     const [customerRows] = await db.query(
-      'SELECT COUNT(*) AS total FROM users WHERE level_akses = "customer"'
+      "SELECT COUNT(*) AS total FROM users WHERE level_akses = 'customer'"
     );
     const totalCustomers = customerRows[0]?.total || 0;
 
@@ -80,7 +80,7 @@ const getDashboardStats = async (req, res) => {
     const [revenueMonthRows] = await db.query(
       `SELECT COALESCE(SUM(total_tagihan), 0) AS total FROM pesanan 
        WHERE MONTH(tgl_pesan) = MONTH(CURDATE()) AND YEAR(tgl_pesan) = YEAR(CURDATE())
-       AND status_pesanan NOT IN ("dibatalkan", "gagal")`
+       AND status_pesanan NOT IN ('dibatalkan', 'gagal')`
     );
     const revenueMonth = revenueMonthRows[0]?.total || 0;
 
@@ -90,11 +90,11 @@ const getDashboardStats = async (req, res) => {
 
     // 5. Sales Monthly (6 months)
     const [salesMonthlyRows] = await db.query(
-      `SELECT DATE_FORMAT(tgl_pesan, "%b") AS month, COALESCE(SUM(total_tagihan), 0) AS sales
+      `SELECT DATE_FORMAT(tgl_pesan, '%b') AS month, COALESCE(SUM(total_tagihan), 0) AS sales
        FROM pesanan
        WHERE tgl_pesan >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-       AND status_pesanan NOT IN ("dibatalkan", "gagal")
-       GROUP BY YEAR(tgl_pesan), MONTH(tgl_pesan), DATE_FORMAT(tgl_pesan, "%b")
+       AND status_pesanan NOT IN ('dibatalkan', 'gagal')
+       GROUP BY YEAR(tgl_pesan), MONTH(tgl_pesan), DATE_FORMAT(tgl_pesan, '%b')
        ORDER BY YEAR(tgl_pesan) ASC, MONTH(tgl_pesan) ASC`
     );
 
@@ -105,10 +105,10 @@ const getDashboardStats = async (req, res) => {
 
     // 7. Weekly Orders (7 days)
     const [weeklyOrdersRows] = await db.query(
-      `SELECT DATE_FORMAT(tgl_pesan, "%a") AS day, COUNT(*) AS total
+      `SELECT DATE_FORMAT(tgl_pesan, '%a') AS day, COUNT(*) AS total
        FROM pesanan
        WHERE tgl_pesan >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-       GROUP BY DATE(tgl_pesan), DATE_FORMAT(tgl_pesan, "%a")
+       GROUP BY DATE(tgl_pesan), DATE_FORMAT(tgl_pesan, '%a')
        ORDER BY DATE(tgl_pesan) ASC`
     );
 
