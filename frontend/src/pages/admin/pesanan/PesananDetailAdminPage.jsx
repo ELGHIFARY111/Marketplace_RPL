@@ -125,7 +125,7 @@ export default function PesananDetailAdminPage() {
       }
     } else if (midtrans.payment_type === "cstore") {
       if (midtrans.store === "indomaret") {
-        links.push({ name: "Simulator Indomaret", url: "https://simulator.sandbox.midtrans.com/indomaret/index" });
+        links.push({ name: "Simulator Indomaret", url: "https://simulator.sandbox.midtrans.com/indomaret/phoenix/index" });
       } else if (midtrans.store === "alfamart") {
         links.push({ name: "Simulator Alfamart", url: "https://simulator.sandbox.midtrans.com/alfamart/index" });
       }
