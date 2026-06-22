@@ -122,9 +122,8 @@ const forgotPassword = async (req, res) => {
       [email]
     );
 
-    // Selalu kirim respons sukses (agar email tidak bisa di-enumerate)
     if (users.length === 0) {
-      return res.json({ message: 'Jika email terdaftar, link reset password telah dikirim.' });
+      return res.status(404).json({ error: 'Email tidak terdaftar di sistem kami.' });
     }
 
     const user = users[0];
@@ -142,8 +141,11 @@ const forgotPassword = async (req, res) => {
 
     res.json({ message: 'Jika email terdaftar, link reset password telah dikirim.' });
   } catch (error) {
-    console.error('Forgot password error:', error);
-    res.status(500).json({ error: 'Gagal mengirim email. Coba beberapa saat lagi.' });
+    console.error('Forgot password error:', error.response?.data || error.message || error);
+    res.status(500).json({ 
+      error: 'Gagal mengirim email. Coba beberapa saat lagi.',
+      details: error.response?.data || error.message 
+    });
   }
 };
 
