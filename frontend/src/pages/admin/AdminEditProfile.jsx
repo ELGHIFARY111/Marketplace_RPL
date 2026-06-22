@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import { User, Save, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -69,7 +70,9 @@ export default function AdminEditProfile() {
       await api.put("/admin/profile", payload);
 
       showAlert("Profil admin berhasil diperbarui", "success");
-      navigate("/admin/profil");
+      setTimeout(() => {
+        navigate("/admin/profil");
+      }, 1500);
     } catch (error) {
       console.error("Gagal update profil admin:", error);
       showAlert("Gagal memperbarui profil admin", "error");
