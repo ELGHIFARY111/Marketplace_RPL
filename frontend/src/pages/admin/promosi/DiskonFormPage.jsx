@@ -95,7 +95,7 @@ export default function DiskonFormPage() {
         {/* HEADER */}
         <div className="flex items-end gap-2">
           <h1 className="text-[3rem] font-bold">
-            Promo
+            Diskon
           </h1>
 
           <span className="text-lg font-semibold mb-2">
