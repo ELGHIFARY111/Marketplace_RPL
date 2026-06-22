@@ -23,8 +23,7 @@
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.6.0",
-    "ngrok": "^5.0.0-beta.2",
-    "nodemailer": "^9.0.1"
+    "ngrok": "^5.0.0-beta.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

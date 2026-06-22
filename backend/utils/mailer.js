@@ -1,24 +1,16 @@
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // gunakan App Password Gmail, bukan password biasa
-  },
-});
+const axios = require('axios');
 
 /**
- * Kirim email reset password ke user
+ * Kirim email reset password ke user menggunakan Brevo API
  * @param {string} toEmail - email tujuan
  * @param {string} resetLink - link reset password lengkap dengan token
  */
 async function sendResetPasswordEmail(toEmail, resetLink) {
-  const mailOptions = {
-    from: `"Zenvy Apparel" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: 'Reset Password Akun Zenvy Apparel',
-    html: `
+  const data = {
+    sender: { name: "Zenvy Apparel", email: process.env.BREVO_SENDER_EMAIL },
+    to: [{ email: toEmail }],
+    subject: "Reset Password Akun Zenvy Apparel",
+    htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9f6f3; padding: 40px; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #3d2c1e; font-size: 28px; margin: 0;">Zenvy Apparel</h1>
@@ -50,10 +42,15 @@ async function sendResetPasswordEmail(toEmail, resetLink) {
           &copy; ${new Date().getFullYear()} Zenvy Apparel. Semua hak dilindungi.
         </p>
       </div>
-    `,
+    `
   };
 
-  await transporter.sendMail(mailOptions);
+  await axios.post('https://api.brevo.com/v3/smtp/email', data, {
+    headers: {
+      'api-key': process.env.BREVO_API_KEY,
+      'Content-Type': 'application/json'
+    }
+  });
 }
 
 module.exports = { sendResetPasswordEmail };
