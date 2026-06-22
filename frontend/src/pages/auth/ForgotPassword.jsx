@@ -42,7 +42,7 @@ export default function ForgotPassword() {
         {sent ? (
           <div className="text-center space-y-4">
             <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-              <p className="text-green-700 font-medium text-lg">📧 Email Terkirim!</p>
+              <p className="text-green-700 font-medium text-lg">Email Terkirim!</p>
               <p className="text-green-600 text-sm mt-2">
                 Jika email terdaftar, link reset password telah dikirim ke <strong>{email}</strong>.
                 Periksa inbox atau folder spam kamu.

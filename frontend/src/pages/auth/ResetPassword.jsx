@@ -66,7 +66,7 @@ export default function ResetPassword() {
         {success ? (
           <div className="text-center space-y-4">
             <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-              <p className="text-green-700 font-medium text-lg">✅ Password Berhasil Direset!</p>
+              <p className="text-green-700 font-medium text-lg">Password Berhasil Direset!</p>
               <p className="text-green-600 text-sm mt-2">
                 Password kamu sudah diperbarui. Silakan login dengan password baru.
               </p>
