@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const cache = require('../utils/cache');
 
 const getAllVarians = async (req, res) => {
   try {
@@ -57,6 +58,7 @@ const createVarian = async (req, res) => {
       [product_id, sku, warna, ukuran, harga || 0, stok || 0, berat_gram || 0]
     );
 
+    cache.delByPrefix('produk:'); // invalidasi cache agar stok terbaru langsung muncul
     res.status(201).json({ message: 'Varian berhasil ditambahkan', id: result.insertId });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -73,6 +75,7 @@ const updateVarian = async (req, res) => {
       [sku, warna, ukuran, harga, stok, berat_gram || 0, id]
     );
 
+    cache.delByPrefix('produk:'); // invalidasi cache agar stok terbaru langsung muncul
     res.json({ message: `Varian ${id} updated` });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -103,6 +106,7 @@ const deleteVarian = async (req, res) => {
 
     await db.query('DELETE FROM varian_produk WHERE id_varian = ?', [id]);
 
+    cache.delByPrefix('produk:'); // invalidasi cache agar stok terbaru langsung muncul
     res.json({ message: `Varian ${id} berhasil dihapus` });
   } catch (error) {
     res.status(500).json({ error: error.message });
